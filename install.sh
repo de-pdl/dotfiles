@@ -1,7 +1,11 @@
 #!/bin/bash
 
+echo "🚀 Starting app installation and dotfile mapping..."
+
+# Navigate to the dotfiles directory safely
+cd "$(dirname "$0")" || exit 1
+
 # --- Configuration ---
-# Define a mapping of folder name to the actual package name 
 declare -A pkg_map=(
     ["nvim"]="neovim"
     ["alacritty"]="alacritty"
@@ -11,10 +15,6 @@ declare -A pkg_map=(
     ["matugen"]="matugen"
 )
 
-# Navigate to the dotfiles directory
-cd "$(dirname "$0")" || exit 1
-
-# List of folders to stow
 apps=(
     "scripts"
     "nvim"
@@ -28,37 +28,55 @@ apps=(
 # --- Functions ---
 install_pkg() {
     local app=$1
-    local package=${pkg_map[$app]:-$app} # Use map, fallback to app name
+    local package=${pkg_map[$app]:-$app}
 
     if ! command -v "$app" &> /dev/null; then
-        echo "📦 $app not found. Installing $package..."
-        # Note: Change 'apt' to 'pacman', 'dnf', or 'brew' depending on your OS
-        sudo apt update && sudo apt install -y "$package"
+        echo "📦 $app not found. Installing $package via yay..."
+        
+        # Use yay without sudo. --needed prevents reinstalling.
+        if ! yay -S --needed --noconfirm "$package"; then
+            echo "❌ Failed to install $package. Please check the package name or your connection."
+        fi
     else
         echo "✅ $app is already installed."
     fi
 }
 
-# --- Prerequisite Check ---
-echo "Checking prerequisites..."
-if ! command -v stow &> /dev/null; then
-    echo "📦 stow not found. Installing stow..."
-    sudo apt update && sudo apt install -y stow
-else
-    echo "✅ stow is already installed."
-fi
-
 # --- Execution ---
-echo "Checking dependencies and mapping dotfiles..."
-
 for app in "${apps[@]}"; do
-    # Skip installation check for 'scripts' or non-binary folders
+    # Skip installation check for 'scripts'
     if [[ "$app" != "scripts" ]]; then
         install_pkg "$app"
     fi
     
     # Run stow
+    echo "🔗 Stowing $app..."
     stow "$app"
 done
 
-echo "Done! Restart your shell to see changes."
+# --- Post-Install Hooks ---
+echo "🔄 Reloading desktop environment..."
+
+# 1. Reload i3 (Restarts in place without closing your apps)
+if pgrep -x "i3" > /dev/null; then
+    echo "Restarting i3..."
+    i3-msg restart > /dev/null
+fi
+
+# 2. Restart Polybar
+if pgrep -x "polybar" > /dev/null; then
+    echo "Restarting polybar..."
+    # Killing it usually triggers your i3 config to respawn it, 
+    # or you can replace this with your specific launch script if you have one.
+    killall polybar
+fi
+
+# 3. Restart Picom (Compositor)
+if pgrep -x "picom" > /dev/null; then
+    echo "Restarting picom..."
+    killall picom
+    # Disown detaches it from the script so it keeps running
+    picom -b & disown 
+fi
+
+echo "🎉 All done! Your new dotfiles are linked and active."
