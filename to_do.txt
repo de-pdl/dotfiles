@@ -1,0 +1,1 @@
+1 . Fix the overlap on the bar
