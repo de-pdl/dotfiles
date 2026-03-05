@@ -41,3 +41,21 @@ fi
 chmod +x "$(dirname "$0")/install.sh"
 
 echo "✅ Setup complete! You can now run ./install.sh"
+
+# --- Setup Git Hooks ---
+echo "🪝 Setting up Git post-merge hook..."
+HOOK_DIR="$(pwd)/.git/hooks"
+HOOK_FILE="$HOOK_DIR/post-merge"
+
+if [ -d "$HOOK_DIR" ]; then
+    cat << 'EOF' > "$HOOK_FILE"
+#!/bin/bash
+echo "🔄 Git pull detected! Syncing dotfiles..."
+REPO_DIR=$(git rev-parse --show-toplevel)
+if [ -f "$REPO_DIR/install.sh" ]; then
+    "$REPO_DIR/install.sh"
+fi
+EOF
+    chmod +x "$HOOK_FILE"
+    echo "✅ Git hook configured!"
+fi
