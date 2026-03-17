@@ -44,13 +44,19 @@ install_pkg() {
 
 # --- Execution ---
 for app in "${apps[@]}"; do
-    # Skip installation check for 'scripts'
     if [[ "$app" != "scripts" ]]; then
         install_pkg "$app"
     fi
-    
-    # Run stow
+
     echo "🔗 Stowing $app..."
+    
+    # Check if a physical file/directory exists at the target and delete it
+    # This assumes your target is ~/.config/$app
+    if [ -e "$HOME/.config/$app" ] && [ ! -L "$HOME/.config/$app" ]; then
+        echo "⚠️  Found existing config for $app, removing..."
+        rm -rf "$HOME/.config/$app"
+    fi
+
     stow "$app"
 done
 

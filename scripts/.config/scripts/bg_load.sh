@@ -10,7 +10,11 @@
 
 #WALLPAPER=$(find "$HOME/Pictures/walls_filtered/$SELECTED_FOLDER" -type f | shuf -n 1)
 
-WALLPAPER=$(find "$HOME/Pictures/walls_filtered" -type f -print0 | shuf -z -n 1)
+#WALLPAPER=$(find "$HOME/Pictures/walls_filtered" -type f -print0 | shuf -z -n 1)
+
+WALLPAPER=$(find "$HOME/Pictures/wallpaper" -type f -print0 | shuf -z -n 1)
+
+
 
 matugen image "$WALLPAPER"
 
