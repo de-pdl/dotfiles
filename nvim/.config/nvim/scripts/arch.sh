@@ -18,13 +18,13 @@ sudo pacman -S --noconfirm \
 # === Syntax.lua ===
 echo ""
 echo "### Syntax.lua"
-echo "Installing: tree-sitter, npm for tree-sitter parser..."
+echo "Installing: tree-sitter, nodejs, npm, clang, python..."
 sudo pacman -S --noconfirm \
-    tree-sitter-cli\
+    tree-sitter-cli \
     nodejs \
-    npm
-
-
+    npm \
+    clang \
+    python
 # === General LSP/Formatting ===
 echo ""
 echo "### General Development"
@@ -33,20 +33,4 @@ sudo pacman -S --noconfirm \
     git \
     curl \
     base-devel
-
-# === Optional: Language Servers ===
-echo ""
-echo "### Language Servers (Optional)"
-read -p "Install Python LSP (pylsp)? (y/n) " -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-    sudo pacman -S --noconfirm python-lsp-server
-fi
-
-read -p "Install Rust analyzer? (y/n) " -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-    sudo pacman -S --noconfirm rust-analyzer
-fi
-
 echo "✅ Arch installation complete!"

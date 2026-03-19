@@ -19,8 +19,10 @@
 **Purpose:** Syntax highlighting with Tree-sitter
 
 ### Required
-- `tree-sitter` - Parser library
+- `tree-sitter-cli` - Parser library
 - `nodejs` + `npm` - For TSUpdate command
+- 'clang' - c
+- 'python3' - python
 
 ### Installation
 **Arch:** Already in arch.sh
@@ -41,16 +43,3 @@ Matugen should be setup seperately
 
 ---
 
-## Optional: Language Servers
-
-### Python
-- `pylsp` or `pyright`
-
-### Rust
-- `rust-analyzer`
-
-### Go
-- `gopls`
-
-### JavaScript/TypeScript
-- `typescript-language-server`

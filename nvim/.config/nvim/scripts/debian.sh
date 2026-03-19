@@ -23,13 +23,13 @@ pip3 install --user ueberzug
 # === Syntax.lua ===
 echo ""
 echo "### Syntax.lua"
-echo "Installing: tree-sitter, npm for tree-sitter parser..."
+echo "Installing: tree-sitter, nodejs, npm, clang, python..."
 sudo apt-get install -y \
     tree-sitter-cli \
     nodejs \
-    npm
-
-
+    npm \
+    clang \
+    python3
 # === General LSP/Formatting ===
 echo ""
 echo "### General Development"
@@ -38,21 +38,4 @@ sudo apt-get install -y \
     git \
     curl \
     build-essential
-
-# === Optional: Language Servers ===
-echo ""
-echo "### Language Servers (Optional)"
-read -p "Install Python LSP (pylsp)? (y/n) " -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-    sudo apt-get install -y python3-pylsp
-fi
-
-read -p "Install Rust analyzer? (y/n) " -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-    curl -L https://github.com/rust-lang/rust-analyzer/releases/latest/download/rust-analyzer-x86_64-unknown-linux-gnu.gz | gunzip -c - | sudo mv /dev/stdin /usr/local/bin/rust-analyzer
-    sudo chmod +x /usr/local/bin/rust-analyzer
-fi
-
 echo "✅ Debian installation complete!"
