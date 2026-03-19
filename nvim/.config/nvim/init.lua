@@ -1,7 +1,13 @@
+local config = require("config")
+
 -- 1. Load your custom keymaps FIRST
 require("keymaps")
 
-vim.cmd.colorscheme("matugen")
+if config.is_remote then
+    vim.cmd.colorscheme("gruvbox")  -- Change to your preferred fallback
+else
+    vim.cmd.colorscheme("matugen")
+end
 
 -- 2. Basic Editor Settings
 vim.opt.number = true           -- Show line numbers
