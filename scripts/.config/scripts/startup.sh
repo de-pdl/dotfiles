@@ -32,12 +32,20 @@ sleep 0.1
 redshift &
 
 # Background loader (Now it will finally reach this line!) + colors
-$script_dir/bg_load.sh
+$script_dir/bg_load.sh &
 
 # Status bar (Run in background)
 $script_dir/bar_launch.sh
 
+$script_dir/tray_launch.sh &
+
+
+
 ### Refresh App Configs (maybe move this to another bash later)
+
+# vim
 for server in /run/user/$(id -u)/nvim.*; do
     (nvim --server "$server" --remote-send "<Esc>:source \$MYVIMRC<CR>:colorscheme matugen<CR>" &)
 done
+
+disown

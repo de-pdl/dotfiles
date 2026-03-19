@@ -1,23 +1,20 @@
 #!/bin/bash
 
-#THEME=("abstract" "calm" "geometry" "minimal" "poly" "basalt")
-#THEME=("apocalypse" "decay" "industrial" "monochrome" "fogsmoke" "cold")
-#THEME=("aerial" "fauna" "flowers" "mountain" "nature" "wave")
-#THEME=("anime" "evangelion" "manga")
-#THEME=("gruvbox" "nord" "solarized" "radium")
-
-#SELECTED_FOLDER=${THEME[$RANDOM % ${#THEME[@]}]}
-
-#WALLPAPER=$(find "$HOME/Pictures/walls_filtered/$SELECTED_FOLDER" -type f | shuf -n 1)
-
-#WALLPAPER=$(find "$HOME/Pictures/walls_filtered" -type f -print0 | shuf -z -n 1)
-
+# Get random wallpaper
 WALLPAPER=$(find "$HOME/Pictures/wallpaper" -type f -print0 | shuf -z -n 1)
 
+if [ -z "$WALLPAPER" ]; then
+    echo "Error: No wallpaper found"
+    exit 1
+fi
 
+echo "🎨 Loading wallpaper: $(basename "$WALLPAPER")"
 
-matugen image "$WALLPAPER"
+# Set wallpaper immediately (fast)
+feh --bg-max "$WALLPAPER" 2>/dev/null
 
-killall feh
-feh --bg-max "$WALLPAPER"
+# Generate colors (this can take a moment)
+echo "🎨 Generating colors with matugen..."
+matugen image "$WALLPAPER" 2>/dev/null
 
+echo "✅ Wallpaper and colors loaded"
