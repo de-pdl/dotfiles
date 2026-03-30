@@ -1,0 +1,18 @@
+# 1. MOBILE SETUP (Native High-DPI)
+profile mobile {
+    output eDP-1 enable mode 2256x1504 scale 1.5 position 0,0
+}
+
+# 2. HOME SETUP (Exact match for your specific monitors)
+profile home {
+    # Replace DP-1/DP-2 with your actual lsusb/swaymsg names
+    output DP-1 enable mode 1920x1080 position 0,0
+    output DP-2 enable mode 1920x1080 position 1920,0
+    output eDP-1 enable mode 2256x1504 scale 1.5 position 3840,0
+}
+
+# 3. UNI SETUP (Wildcard for any desk)
+profile uni_desk {
+    output * enable mode auto position 0,0
+    output eDP-1 enable mode 2256x1504 scale 1.5 position 1920,0
+}
