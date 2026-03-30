@@ -1,18 +1,45 @@
-# 1. MOBILE SETUP (Native High-DPI)
-profile mobile {
-    output eDP-1 enable mode 2256x1504 scale 1.5 position 0,0
+# ---------------------------------------------------------
+# PC / DOCKED: Side (Left) | Main (Right)
+# ---------------------------------------------------------
+profile pc_standard {
+    output "HDMI-A-2" mode 1920x1080@144Hz position 0,0
+    output "DP-4"     mode 2560x1440@144Hz position 1920,0
 }
 
-# 2. HOME SETUP (Exact match for your specific monitors)
-profile home {
-    # Replace DP-1/DP-2 with your actual lsusb/swaymsg names
-    output DP-1 enable mode 1920x1080 position 0,0
-    output DP-2 enable mode 1920x1080 position 1920,0
-    output eDP-1 enable mode 2256x1504 scale 1.5 position 3840,0
+# ---------------------------------------------------------
+# PC + TV: Side (Left) | Main (Center) | TV (Right)
+# ---------------------------------------------------------
+profile pc_with_tv {
+    output "HDMI-A-2" mode 1920x1080@144Hz position 0,0
+    output "DP-4"     mode 2560x1440@144Hz position 1920,0
+    output "HDMI-A-1" mode 1280x720@60Hz   position 4480,0 # 1920 + 2560
 }
 
-# 3. UNI SETUP (Wildcard for any desk)
-profile uni_desk {
-    output * enable mode auto position 0,0
-    output eDP-1 enable mode 2256x1504 scale 1.5 position 1920,0
+# ---------------------------------------------------------
+# LAPTOP DOCKED (Lid Open): Side | Main (Top) | Laptop (Bottom)
+# ---------------------------------------------------------
+profile laptop_docked {
+    output "HDMI-A-2" mode 1920x1080@144Hz position 0,0
+    output "DP-4"     mode 2560x1440@144Hz position 1920,0
+    
+    # Laptop is centered under the Main monitor
+    # Math: Main starts at 1920. Logical width of laptop (2256 / 1.5) is ~1504.
+    # (2560 - 1504) / 2 = 528. So 1920 + 528 = 2448.
+    output "eDP-1"    mode 2256x1504@60Hz scale 1.5 position 2448,1440
+}
+
+# ---------------------------------------------------------
+# LAPTOP CLAMSHELL: Side | Main (Lid Closed)
+# ---------------------------------------------------------
+profile laptop_clamshell {
+    output "eDP-1"    disable
+    output "HDMI-A-2" mode 1920x1080@144Hz position 0,0
+    output "DP-4"     mode 2560x1440@144Hz position 1920,0
+}
+
+# ---------------------------------------------------------
+# LAPTOP MOBILE: Just the internal screen
+# ---------------------------------------------------------
+profile laptop_mobile {
+    output "eDP-1"    mode 2256x1504@60Hz scale 1.5 position 0,0
 }

@@ -1,6 +1,8 @@
 #!/bin/bash
 
-echo "🚀 Starting Sway/Wayland app installation and dotfile mapping..."
+echo "🔗 Starting dotfile mapping..."
+echo "⚠️  Ensure you have run ./install_dependencies.sh and ./setup.sh first!"
+echo ""
 
 # Navigate to the dotfiles directory safely
 DOTFILES_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -10,19 +12,7 @@ CONFIG_DIR="$HOME/.config"
 mkdir -p "$CONFIG_DIR"
 
 # --- Configuration ---
-# Map the dotfile folders to the actual Arch/AUR package names needed
-declare -A pkg_map=(
-    ["nvim"]="neovim"
-    ["alacritty"]="alacritty"
-    ["sway"]="sway swaybg swaylock swayidle"
-    ["waybar"]="waybar"
-    ["matugen"]="matugen"
-    ["kanshi"]="kanshi"
-    ["rofi"]="rofi-wayland"
-    ["scripts"]="grim slurp wl-clipboard gammastep" # Extra tools needed by your scripts
-)
-
-# Folders inside your dotfiles repo to symlink
+# Folders inside your flattened dotfiles repo to symlink
 folders=(
     "scripts"
     "nvim"
@@ -34,39 +24,29 @@ folders=(
     "rofi"
 )
 
-# --- Functions ---
-install_pkg() {
-    local folder=$1
-    local packages=${pkg_map[$folder]:-$folder}
-
-    echo "📦 Checking packages for $folder: $packages..."
-    
-    # Use yay without sudo. --needed prevents reinstalling.
-    if ! yay -S --needed --noconfirm $packages; then
-        echo "❌ Failed to install $packages. Please check your connection or the AUR."
-    else
-        echo "✅ $packages installed/ready."
-    fi
-}
-
 # --- Execution ---
 for folder in "${folders[@]}"; do
-    # Install dependencies associated with this folder
-    install_pkg "$folder"
+    # Skip if the folder doesn't exist in the repo (just in case)
+    if [ ! -d "$DOTFILES_DIR/$folder" ]; then
+        echo "⏭️  Skipping $folder (Not found in dotfiles directory)"
+        continue
+    fi
 
     echo "🔗 Linking $folder..."
     
     # Check if a physical file/directory OR a symlink exists at the target and delete it
     if [ -e "$CONFIG_DIR/$folder" ] || [ -L "$CONFIG_DIR/$folder" ]; then
-        echo "⚠️  Found existing config for $folder, removing..."
+        echo "   ⚠️  Found existing config, removing..."
         rm -rf "$CONFIG_DIR/$folder"
     fi
 
     # Create the clean, direct symlink
     ln -s "$DOTFILES_DIR/$folder" "$CONFIG_DIR/$folder"
+    echo "   ✅ Linked"
 done
 
 # --- Post-Install Hooks ---
+echo ""
 echo "🔄 Reloading Wayland environment..."
 
 # 1. Reload Sway (Restarts in place without closing your apps)
@@ -88,4 +68,4 @@ if pgrep -x "kanshi" > /dev/null; then
     kanshi & disown
 fi
 
-echo "🎉 All done! Your new Wayland dotfiles are linked and active."
+echo "🎉 All done! Your dotfiles are directly linked and active."

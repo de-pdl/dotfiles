@@ -42,21 +42,33 @@ if ! grep -q "pam_u2f.so" /etc/pam.d/greetd; then
 fi
 
 # --- 4. Portable Auto-Lock (Removal) ---
+#!/bin/bash
+
+# --- 4. Portable Auto-Lock (The "Smart Session" Version) ---
 echo "⚙️  Setting up hardware auto-lock on key removal..."
 
+# We write the script block here so it's DEPLOYED by the setup script
 cat << 'EOF' | sudo tee /usr/local/bin/yubikey-lock.sh > /dev/null
 #!/bin/bash
-ACTIVE_USER=$(loginctl list-sessions --no-legend | awk '$5=="active" {print $3}' | head -n 1)
-if [ -z "$ACTIVE_USER" ]; then exit 0; fi 
+# 1. Find the human user attached to the physical seat (ignores manager sessions)
+ACTIVE_USER=$(loginctl list-users --no-legend | awk '{print $2}')
+if [ -z "$ACTIVE_USER" ]; then exit 0; fi
 
 USER_ID=$(id -u "$ACTIVE_USER")
+
+# 2. Find the Wayland socket specifically for that user
 W_DISP=$(ls /run/user/$USER_ID | grep -m 1 '^wayland-[0-9]\+$')
 
-su - "$ACTIVE_USER" -c "env XDG_RUNTIME_DIR=/run/user/$USER_ID WAYLAND_DISPLAY=$W_DISP swaylock -f -c 000000"
+# 3. Trigger lock (using absolute paths for maximum reliability)
+/usr/bin/su - "$ACTIVE_USER" -c "env XDG_RUNTIME_DIR=/run/user/$USER_ID WAYLAND_DISPLAY=$W_DISP /usr/bin/swaylock -f -c 000000"
 EOF
 
 sudo chmod +x /usr/local/bin/yubikey-lock.sh
-echo 'ACTION=="remove", ENV{ID_VENDOR_ID}=="1050", RUN+="/usr/local/bin/yubikey-lock.sh"' | sudo tee /etc/udev/rules.d/99-yubikey-lock.rules > /dev/null
+
+# --- 5. The Universal Udev Rule ---
+# Removed Model ID so it works with ANY Yubico key (Vendor 1050)
+echo 'ACTION=="remove", SUBSYSTEM=="usb", ENV{ID_VENDOR_ID}=="1050", RUN+="/usr/local/bin/yubikey-lock.sh"' | sudo tee /etc/udev/rules.d/99-yubikey-lock.rules > /dev/null
+
 sudo udevadm control --reload-rules && sudo udevadm trigger
 
 echo "🎉 YubiKey security setup complete!"

@@ -6,6 +6,12 @@ floating_modifier $mod
 
 exec_always --no-startup-id sh -c "/home/$username/.config/scripts/startup.sh"
 
+# --- 2. Clamshell Mode ---
+# When lid closes: disable internal screen. When opens: enable it.
+# This triggers Scenario 4 automatically.
+bindswitch --locked lid:on output eDP-1 disable
+bindswitch --locked lid:off output eDP-1 enable
+
 exec_always --no-startup-id /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
 for_window [app_id="Gnome-control-center"] floating enable
 for_window [window_role="pop-up"] floating enable
