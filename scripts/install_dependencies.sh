@@ -13,6 +13,9 @@ PACMAN_PKGS=(
     
     # Login Manager (Display Manager)
     greetd greetd-tuigreet
+
+    # gpu check
+    pciutils
     
     # Hardware Security (YubiKey)
     pam-u2f

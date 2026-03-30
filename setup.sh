@@ -8,8 +8,24 @@ echo ""
 echo "⚙️  Configuring greetd (Login Manager)..."
 # Back up the original config just in case
 sudo cp /etc/greetd/config.toml /etc/greetd/config.toml.bak
+
+
 # Replace the default greetd command with tuigreet launching sway
-sudo sed -i 's|^command = .*|command = "tuigreet --time --cmd sway"|' /etc/greetd/config.toml
+echo "⚙️  Configuring greetd (Login Manager)..."
+sudo cp /etc/greetd/config.toml /etc/greetd/config.toml.bak
+
+# 🔍 Detect if an NVIDIA GPU is physically present
+if lspci | grep -iq "nvidia"; then
+    echo "🏎️  NVIDIA GPU detected! Adding --unsupported-gpu flag to Greetd..."
+    # We use single quotes inside the double quotes for tuigreet's --cmd
+    GREETD_CMD="tuigreet --time --cmd 'sway --unsupported-gpu'"
+else
+    echo "🖥️  Non-NVIDIA GPU detected. Using standard Sway command."
+    GREETD_CMD="tuigreet --time --cmd sway"
+fi
+
+# Apply the detected command to the config
+sudo sed -i "s|^command = .*|command = \"$GREETD_CMD\"|" /etc/greetd/config.toml
 
 # 2. Module Execution (Hardware Security)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/scripts"
