@@ -47,5 +47,3 @@ abbr -a nvimrc 'nvim ~/.config/nvim/init.lua'
 abbr -a fishrc 'nvim ~/.config/fish/config.fish'
 abbr -a swayrc 'nvim ~/.config/sway/config'
 
-# --- TERM OUTPUS ----
-abbr cat 'cat | xclip -selection clipboard'

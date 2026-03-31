@@ -112,3 +112,9 @@ function fish_startup_time
     fish --version
     time fish -i -c 'exit'
 end
+
+function mycat
+    /bin/cat $argv | xclip -selection clipboard
+    echo "copied to clipboard"
+end
+
