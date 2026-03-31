@@ -3,7 +3,8 @@
 # Variables - Updated for flat structure
 username="ayush"
 # After running install.sh, scripts will be at ~/.config/scripts/
-script_dir="/home/$username/.config/scripts"
+
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Clean Slate (Wayland tools only)
 # We add kanshi here to ensure we don't have multiple listeners

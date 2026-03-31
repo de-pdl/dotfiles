@@ -3,9 +3,14 @@
 set -euo pipefail
 
 WALLPAPER_DIR="${WALLPAPER_DIR:-$HOME/Pictures/wallpaper}"
+MATUGEN_PREFER="${MATUGEN_PREFER:-darkness}"  # Default to darkness
 LOG_FILE="${XDG_STATE_HOME:-$HOME/.local/state}/rice_farm.log"
 
 mkdir -p "$(dirname "$LOG_FILE")"
+
+# ============================================================================
+# UTILITY FUNCTIONS
+# ============================================================================
 
 log() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" | tee -a "$LOG_FILE"
@@ -17,39 +22,81 @@ error_exit() {
     exit 1
 }
 
-# Validate wallpaper directory
-[[ -d "$WALLPAPER_DIR" ]] || error_exit "Wallpaper directory not found: $WALLPAPER_DIR"
+# ============================================================================
+# WALLPAPER FUNCTIONS
+# ============================================================================
 
-# Find random wallpaper
-WALLPAPER=$(find "$WALLPAPER_DIR" -type f \( -iname "*.jpg" -o -iname "*.png" -o -iname "*.jpeg" \) -print0 | shuf -z -n 1 | tr -d '\0')
-[[ -z "$WALLPAPER" ]] && error_exit "No wallpaper found in $WALLPAPER_DIR"
+validate_wallpaper_dir() {
+    [[ -d "$WALLPAPER_DIR" ]] || error_exit "Wallpaper directory not found: $WALLPAPER_DIR"
+}
 
-WP_NAME=$(basename "$WALLPAPER")
-log "🎨 Loading wallpaper: $WP_NAME"
+find_random_wallpaper() {
+    local wallpaper
+    wallpaper=$(find "$WALLPAPER_DIR" -type f \( -iname "*.jpg" -o -iname "*.png" -o -iname "*.jpeg" \) -print0 | shuf -z -n 1 | tr -d '\0')
+    [[ -z "$wallpaper" ]] && error_exit "No wallpaper found in $WALLPAPER_DIR"
+    echo "$wallpaper"
+}
 
-# Set wallpaper
-if ! swaymsg output "*" bg "$WALLPAPER" fill 2>/dev/null; then
-    error_exit "Failed to set wallpaper with swaymsg"
-fi
+set_wallpaper() {
+    local wallpaper="$1"
+    log "🎨 Loading wallpaper: $(basename "$wallpaper")"
+    
+    if ! swaymsg output "*" bg "$wallpaper" fill 2>/dev/null; then
+        error_exit "Failed to set wallpaper with swaymsg"
+    fi
+}
 
-# Generate colors with matugen
-if command -v matugen &> /dev/null; then
-    log "🎨 Generating colors with matugen..."
-    if matugen image "$WALLPAPER" -m dark; then
+# ============================================================================
+# COLOR GENERATION FUNCTIONS
+# ============================================================================
+
+generate_colors() {
+    local wallpaper="$1"
+    
+    if ! command -v matugen &> /dev/null; then
+        log "⚠️  matugen not found, skipping color generation"
+        return 0
+    fi
+    
+    log "🎨 Generating colors with matugen (preference: $MATUGEN_PREFER)..."
+    
+    if matugen image "$wallpaper" -m dark --prefer="$MATUGEN_PREFER"; then
         log "✅ Colors generated"
     else
         log "⚠️  matugen failed (non-fatal)"
     fi
-else
-    log "⚠️  matugen not found, skipping color generation"
-fi
+}
 
-# Trigger config reloads
-if [[ -f "$HOME/.config/alacritty/alacritty.toml" ]]; then
-    touch "$HOME/.config/alacritty/alacritty.toml"
-fi
+# ============================================================================
+# CONFIG RELOAD FUNCTIONS
+# ============================================================================
 
-pkill -USR2 waybar 2>/dev/null || true
+trigger_config_reloads() {
+    # Trigger alacritty config reload
+    if [[ -f "$HOME/.config/alacritty/alacritty.toml" ]]; then
+        touch "$HOME/.config/alacritty/alacritty.toml"
+    fi
+    
+    # Trigger waybar reload
+    pkill -USR2 waybar 2>/dev/null || true
+}
 
-log "✅ Wallpaper and colors loaded successfully"
-notify-send "Rice Farm" "Wallpaper: $WP_NAME" -i dialog-information
+# ============================================================================
+# MAIN
+# ============================================================================
+
+main() {
+    validate_wallpaper_dir
+    
+    local wallpaper
+    wallpaper=$(find_random_wallpaper)
+    
+    set_wallpaper "$wallpaper"
+    generate_colors "$wallpaper"
+    trigger_config_reloads
+    
+    log "✅ Wallpaper and colors loaded successfully"
+    notify-send "Rice Farm" "Wallpaper: $(basename "$wallpaper")" -i dialog-information
+}
+
+main "$@"

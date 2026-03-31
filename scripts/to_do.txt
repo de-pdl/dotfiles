@@ -1,7 +1,0 @@
-- create a more efficent reload system
-
-	- current idea create a background refresh for apps rather then killing everything
-
-	$ 1 for restart like everything
-
-	$ 2 for refresh like everything

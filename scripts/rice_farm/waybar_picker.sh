@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-WAYBAR_DIR="$HOME/.dotfiles/waybar"
+WAYBAR_DIR="$HOME/.config/waybar"
 THEMES_DIR="$WAYBAR_DIR/themes"
 LOG_FILE="${XDG_STATE_HOME:-$HOME/.local/state}/rice_farm.log"
 

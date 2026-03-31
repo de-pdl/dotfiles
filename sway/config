@@ -4,7 +4,7 @@ font pango:Hack 9
 floating_modifier $mod
 
 
-exec_always --no-startup-id sh -c "/home/$username/.config/scripts/startup.sh"
+exec_always --no-startup-id sh -c "/home/$username/.config/scripts/rice_farm/startup.sh"
 
 # --- 2. Clamshell Mode ---
 # When lid closes: disable internal screen. When opens: enable it.
