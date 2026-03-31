@@ -29,6 +29,10 @@ bindsym $mod+q kill
 
 # start rofi (ensure you installed rofi-wayland)
 bindsym ctrl+space exec "PATH=$PATH:$HOME/.local/bin rofi -show combi -modi window,run,combi -combi-modi window,run"
+exec_always pkill waybar; waybar -c ~/.dotfiles/waybar/config -s ~/.dotfiles/waybar/style.css
+
+
+bindsym $mod+Shift+c exec ~/.config/scripts/rice_farm/main_rice.sh
 
 # alternatively, you can use the cursor keys:
 bindsym $mod+Left focus left
@@ -104,7 +108,7 @@ bindsym $mod+Shift+8 move container to workspace number $ws8
 bindsym $mod+Shift+9 move container to workspace number $ws9
 bindsym $mod+Shift+0 move container to workspace number $ws10
 
-bindsym $mod+Shift+c reload
+
 bindsym $mod+Shift+r restart
 # Sway exit prompt
 bindsym $mod+Shift+e exec "swaynag -t warning -m 'You pressed the exit shortcut. Do you really want to exit Sway? This will end your Wayland session.' -b 'Yes, exit sway' 'swaymsg exit'"

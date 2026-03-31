@@ -48,7 +48,7 @@ case "$choice" in
         log "Refreshing Waybar..."
         pkill -f waybar || true
         sleep 0.3
-        waybar > /dev/null 2>&1 &
+        PATH="$HOME/.local/bin:$PATH" waybar > /dev/null 2>&1 &
         log "✅ Waybar refreshed"
         notify-send "Rice Farm" "Waybar Refreshed" -i view-refresh
         ;;

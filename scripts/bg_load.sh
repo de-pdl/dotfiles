@@ -15,7 +15,7 @@ swaymsg output "*" bg "$WALLPAPER" fill 2>/dev/null
 
 # Generate colors (this can take a moment)
 echo "🎨 Generating colors with matugen..."
-matugen image "$WALLPAPER" 2>/dev/null
+matugen image "$WALLPAPER" -m dark
 
 # 👉 NEW: Force Alacritty to reload the new colors
 touch ~/.config/alacritty/alacritty.toml
