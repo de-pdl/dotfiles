@@ -28,7 +28,8 @@ PACMAN_PKGS=(
     # UI Components & Utilities
     waybar alacritty neovim
     dunst gammastep kanshi
-    
+    starship
+
     # Fonts
     ttf-jetbrains-mono-nerd ttf-hack-nerd
 )
