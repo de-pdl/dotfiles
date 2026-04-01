@@ -1,26 +1,26 @@
 * {
     /* ── Matugen palette ───────────────────────────── */
-    primary:          #bdc2ff;
-    on-primary:       #262b61;
-    primary-container:    #3c4279;
-    on-primary-container: #e0e0ff;
+    primary:          #e5b6f2;
+    on-primary:       #452153;
+    primary-container:    #5d386b;
+    on-primary-container: #f9d8ff;
 
-    secondary:        #c4c4dd;
-    on-secondary:     #2d2f42;
+    secondary:        #d5c0d7;
+    on-secondary:     #392c3d;
 
-    surface:          #131318;
-    on-surface:       #e4e1e9;
-    surface-variant:  #46464f;
-    on-surface-variant: #c7c5d0;
+    surface:          #161217;
+    on-surface:       #eae0e7;
+    surface-variant:  #4c444d;
+    on-surface-variant: #cec3cd;
 
-    background:       #131318;
-    on-background:    #e4e1e9;
+    background:       #161217;
+    on-background:    #eae0e7;
 
     error:            #ffb4ab;
     on-error:         #690005;
 
-    outline:          #91909a;
-    outline-variant:  #46464f;
+    outline:          #988e97;
+    outline-variant:  #4c444d;
 
     /* ── Semantic aliases (everything references these) ── */
     bg:               @background;

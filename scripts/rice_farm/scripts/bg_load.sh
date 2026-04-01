@@ -101,6 +101,10 @@ trigger_config_reloads() {
     if [[ -f "$HOME/.config/alacritty/alacritty.toml" ]]; then
         touch "$HOME/.config/alacritty/alacritty.toml"
     fi
+    # Trigger neovim config reload
+    if [[ -f "$HOME/.config/nvim/init.lua" ]]; then
+        touch "$HOME/.config/nvim/init.lua"
+    fi
     # Trigger waybar reload
     pkill -USR2 waybar 2>/dev/null || true
     # Trigger rofi reload
