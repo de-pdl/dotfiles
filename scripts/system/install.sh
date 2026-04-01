@@ -14,20 +14,22 @@ mkdir -p "$CONFIG_DIR"
 # --- Configuration ---
 # Folders at dotfiles root to symlink into ~/.config/
 config_folders=(
+
+    # text editor, bash profile, terminal
     "nvim"
     "fish"
     "alacritty"
 
+    # system sway and lock
     "sway"
     "swaylock"
     
-    "waybar"
+    # bar, screen manager, color manager
+    "waybar" 
     "kanshi"
     "matugen"
 
-    "picom"
-    "polybar"
-
+    # demenu
     "rofi"
 )
 

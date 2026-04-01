@@ -9,7 +9,7 @@ sudo pacman -Syu --noconfirm
 # --- 1. Official Arch Packages ---
 PACMAN_PKGS=(
     # Core Wayland & Window Manager
-    sway swaybg swaylock swayidle
+    sway swaybg swaylock-effects swayidle
     
     # Login Manager (Display Manager)
     greetd greetd-tuigreet
