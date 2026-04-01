@@ -1,0 +1,46 @@
+* {
+    /* ── Matugen palette ───────────────────────────── */
+    primary:          #feb0d2;
+    on-primary:       #521d39;
+    primary-container:    #6d3350;
+    on-primary-container: #ffd8e7;
+
+    secondary:        #e0bdca;
+    on-secondary:     #412a34;
+
+    surface:          #191114;
+    on-surface:       #eedfe3;
+    surface-variant:  #504348;
+    on-surface-variant: #d4c2c8;
+
+    background:       #191114;
+    on-background:    #eedfe3;
+
+    error:            #ffb4ab;
+    on-error:         #690005;
+
+    outline:          #9d8d92;
+    outline-variant:  #504348;
+
+    /* ── Semantic aliases (everything references these) ── */
+    bg:               @background;
+    bg-alt:           @surface-variant;
+    fg:               @on-background;
+    fg-dim:           @on-surface-variant;
+
+    accent:           @primary;
+    accent-fg:        @on-primary;
+    accent-subtle:    @primary-container;
+    accent-subtle-fg: @on-primary-container;
+
+    urgent:           @error;
+    urgent-fg:        @on-error;
+
+    border-color:     @outline-variant;
+    selected-bg:      @primary;
+    selected-fg:      @on-primary;
+
+    /* ── Rofi internals ────────────────────────────── */
+    background-color: transparent;
+    text-color:       @fg;
+}

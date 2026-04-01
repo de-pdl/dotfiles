@@ -42,8 +42,9 @@ abbr -a yay 'yay --color=auto'
 abbr -a paru 'paru --color=auto'
 
 # --- CONFIG SHORTCUTS ---
-abbr -a dotfiles 'cd ~/.dotfiles'
+abbr -a config 'cd ~/.config'
 abbr -a nvimrc 'nvim ~/.config/nvim/init.lua'
 abbr -a fishrc 'nvim ~/.config/fish/config.fish'
 abbr -a swayrc 'nvim ~/.config/sway/config'
+abbr -a scripts 'cd ~/.config/scripts'
 

@@ -1,0 +1,139 @@
+@import "colors.rasi"
+
+/*─────────────────────────────────────────────────
+  LAYOUT
+─────────────────────────────────────────────────*/
+window {
+    background-color: @bg;
+    border:           2px solid;
+    border-color:     @border-color;
+    border-radius:    14px;
+    width:            520px;
+    padding:          0px;
+}
+
+mainbox {
+    background-color: transparent;
+    children:         [ inputbar, message, listview ];
+    spacing:          0px;
+    padding:          12px;
+}
+
+/*─────────────────────────────────────────────────
+  INPUT BAR
+─────────────────────────────────────────────────*/
+inputbar {
+    background-color: @bg-alt;
+    border-radius:    10px;
+    padding:          10px 14px;
+    margin:           0px 0px 10px 0px;
+    children:         [ prompt, textbox-prompt-colon, entry ];
+    spacing:          6px;
+}
+
+prompt {
+    background-color: transparent;
+    text-color:       @accent;
+    font:             "JetBrainsMono Nerd Font Bold 12";
+}
+
+textbox-prompt-colon {
+    background-color: transparent;
+    text-color:       @fg-dim;
+    str:              "·";
+}
+
+entry {
+    background-color: transparent;
+    text-color:       @urgent;
+    placeholder:      "Search...";
+    placeholder-color: @fg-dim;
+    cursor:           text;
+}
+
+/*─────────────────────────────────────────────────
+  LIST
+─────────────────────────────────────────────────*/
+listview {
+    background-color: transparent;
+    columns:          1;
+    lines:            8;
+    scrollbar:        false;
+    spacing:          4px;
+    fixed-height:     true;
+}
+
+element {
+    background-color: transparent;
+    border-radius:    8px;
+    padding:          8px 10px;
+    spacing:          10px;
+    orientation:      horizontal;
+}
+
+element normal.normal {
+    background-color: transparent;
+    text-color:       @fg;
+}
+
+element normal.urgent {
+    background-color: @urgent;
+    text-color:       @urgent-fg;
+}
+
+element normal.active {
+    background-color: @accent-subtle;
+    text-color:       @accent-subtle-fg;
+}
+
+element selected.normal {
+    background-color: @selected-bg;
+    text-color:       @selected-fg;
+}
+
+element selected.urgent {
+    background-color: @urgent;
+    text-color:       @urgent-fg;
+}
+
+element selected.active {
+    background-color: @accent;
+    text-color:       @accent-fg;
+}
+
+element-icon {
+    size:             22px;
+    cursor:           pointer;
+}
+
+element-text {
+    vertical-align:   0.5;
+    cursor:           pointer;
+    highlight:        @accent-fg;
+}
+
+/*─────────────────────────────────────────────────
+  MESSAGE BOX  (errors / info)
+─────────────────────────────────────────────────*/
+message {
+    background-color: @accent-subtle;
+    border-radius:    8px;
+    padding:          8px 12px;
+    margin:           0px 0px 10px 0px;
+}
+
+textbox {
+    background-color: transparent;
+    text-color:       @accent-subtle-fg;
+}
+
+/*─────────────────────────────────────────────────
+  SCROLLBAR
+─────────────────────────────────────────────────*/
+scrollbar {
+    background-color: @bg-alt;
+    handle-color:     @border-color;
+    handle-width:     4px;
+    border-radius:    4px;
+    width:            4px;
+}

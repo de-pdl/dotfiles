@@ -1,0 +1,46 @@
+* {
+    /* ── Matugen palette ───────────────────────────── */
+    primary:          {{colors.primary.default.hex}};
+    on-primary:       {{colors.on_primary.default.hex}};
+    primary-container:    {{colors.primary_container.default.hex}};
+    on-primary-container: {{colors.on_primary_container.default.hex}};
+
+    secondary:        {{colors.secondary.default.hex}};
+    on-secondary:     {{colors.on_secondary.default.hex}};
+
+    surface:          {{colors.surface.default.hex}};
+    on-surface:       {{colors.on_surface.default.hex}};
+    surface-variant:  {{colors.surface_variant.default.hex}};
+    on-surface-variant: {{colors.on_surface_variant.default.hex}};
+
+    background:       {{colors.background.default.hex}};
+    on-background:    {{colors.on_background.default.hex}};
+
+    error:            {{colors.error.default.hex}};
+    on-error:         {{colors.on_error.default.hex}};
+
+    outline:          {{colors.outline.default.hex}};
+    outline-variant:  {{colors.outline_variant.default.hex}};
+
+    /* ── Semantic aliases (everything references these) ── */
+    bg:               @background;
+    bg-alt:           @surface-variant;
+    fg:               @on-background;
+    fg-dim:           @on-surface-variant;
+
+    accent:           @primary;
+    accent-fg:        @on-primary;
+    accent-subtle:    @primary-container;
+    accent-subtle-fg: @on-primary-container;
+
+    urgent:           @error;
+    urgent-fg:        @on-error;
+
+    border-color:     @outline-variant;
+    selected-bg:      @primary;
+    selected-fg:      @on-primary;
+
+    /* ── Rofi internals ────────────────────────────── */
+    background-color: transparent;
+    text-color:       @fg;
+}

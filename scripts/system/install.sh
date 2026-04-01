@@ -17,7 +17,10 @@ config_folders=(
     "nvim"
     "fish"
     "alacritty"
+
     "sway"
+    "swaylock"
+    
     "waybar"
     "kanshi"
     "matugen"

@@ -1,0 +1,17 @@
+configuration {
+    modi:           "drun,run,window,filebrowser";
+    show-icons:     true;
+    icon-theme:     "Papirus";
+    terminal:       "alacritty";
+    drun-display-format: "{name}";
+    window-format:  "{w} · {c} · {t}";
+    font:           "JetBrainsMono Nerd Font 12";
+
+    /* filebrowser */
+    filebrowser {
+        directory:     "~";
+        show-hidden:   false;
+    }
+}
+
+@theme "theme"

@@ -6,7 +6,13 @@
 # Disable default greeting
 set fish_greeting
 
+# echo "Welcome to Fish"
+if status is-interactive
+    fastfetch 
+end
+
+
 # Fish automatically sources files in ~/.config/fish/conf.d/
 # No need to manually source them here
 
-echo "🐟 Fish shell initialized"
+starship init fish | source

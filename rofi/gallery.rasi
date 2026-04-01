@@ -1,0 +1,52 @@
+@import "colors.rasi"
+
+window {
+    background-color: @bg;
+    border:           2px solid;
+    border-color:     @border-color;
+    border-radius:    14px;
+    width:            85%;
+    height:           90%;
+    padding:          0px;
+}
+
+mainbox {
+    background-color: transparent;
+    children:         [ listview ];
+    padding:          12px;
+}
+
+inputbar {
+    enabled: false;
+}
+
+listview {
+    background-color: transparent;
+    columns:          4;
+    lines:            3;
+    fixed-height:     true;
+    spacing:          8px;
+}
+
+element {
+    background-color: transparent;
+    border-radius:    10px;
+    orientation:      vertical;
+    padding:          4px;
+}
+
+element selected.normal {
+    background-color: @accent-subtle;
+    border:           2px solid;
+    border-color:     @accent;
+}
+
+element-icon {
+    size:             220px;
+    cursor:           pointer;
+}
+
+element-text {
+    font:             "Monospace 0";
+    color:            rgba(0,0,0,0);
+}

@@ -113,8 +113,13 @@ function fish_startup_time
     time fish -i -c 'exit'
 end
 
+# --- TERM UI STUFF
 function mycat
     /bin/cat $argv | xclip -selection clipboard
     echo "copied to clipboard"
+end
+
+function fastfetch
+    command fastfetch -c ~/.config/fish/shell_config/neofetch.jsonc $argv
 end
 

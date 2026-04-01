@@ -1,0 +1,6 @@
+# ~/.config/swaylock/config
+
+scaling=fill
+effect-blur=7x2
+
+image=/home/ayush/Pictures/wallpaper/alejagalesa-camp.jpg

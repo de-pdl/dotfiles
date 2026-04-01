@@ -32,7 +32,7 @@ bindsym ctrl+space exec "PATH=$PATH:$HOME/.local/bin rofi -show combi -modi wind
 exec_always pkill waybar; waybar -c ~/.dotfiles/waybar/config -s ~/.dotfiles/waybar/style.css
 
 
-bindsym $mod+Shift+c exec ~/.config/scripts/rice_farm/main_rice.sh
+bindsym $mod+Shift+Return exec ~/.config/scripts/rice_farm/main_rice.sh
 
 # alternatively, you can use the cursor keys:
 bindsym $mod+Left focus left
