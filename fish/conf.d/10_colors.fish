@@ -4,13 +4,13 @@
 # =============================================================================
 
 # Primary palette
-set -l primary #feb0d2
-set -l secondary #e0bdca
-set -l tertiary #f2bb99
+set -l primary #bec2ff
+set -l secondary #c5c4dd
+set -l tertiary #e7b9d5
 set -l error #ffb4ab
-set -l background #191114
-set -l surface #191114
-set -l outline #9d8d92
+set -l background #131318
+set -l surface #131318
+set -l outline #91909a
 
 # --- FISH COLORS ---
 set -gx fish_color_command $primary
