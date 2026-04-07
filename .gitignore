@@ -1,0 +1,6 @@
+# Colors
+alacritty/colors.toml
+fish/conf.d/10_colors.fish
+nvim/colors/matugen.lua
+rofi/colors.rasi
+waybar/colors.css
