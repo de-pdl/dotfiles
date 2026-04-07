@@ -79,17 +79,15 @@ generate_colors() {
 # ============================================================================
 update_swaylock() {
     local wallpaper="$1"
-    local swaylock_config="$HOME/.config/swaylock/config"
-    if [[ ! -f "$swaylock_config" ]]; then
-        log "⚠️  swaylock config not found, skipping"
-        return 0
+    
+    if [[ ! -f "$wallpaper" ]]; then
+        log "⚠️ Wallpaper not found: $wallpaper"
+        return 1
     fi
-    # Update image path (handles spaces around =)
-    if grep -q "^image" "$swaylock_config"; then
-        sed -i "s|^image.*|image=$wallpaper|" "$swaylock_config"
-    else
-        echo "image=$wallpaper" >> "$swaylock_config"
-    fi
+    
+    # Create/update symlink
+    ln -sf "$wallpaper" "$HOME/.config/swaylock/wallpaper.jpg"
+    
     log "🔐 Swaylock updated with: $(basename "$wallpaper")"
 }
 

@@ -2,6 +2,5 @@
 
 scaling=fill
 effect-blur=7x2
+image=~/.config/swaylock/wallpaper.jpg
 
-
-image=/home/ayush/Pictures/wallpaper/rmradev-vampire-castle.jpg
