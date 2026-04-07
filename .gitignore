@@ -4,3 +4,4 @@ fish/conf.d/10_colors.fish
 nvim/colors/matugen.lua
 rofi/colors.rasi
 waybar/colors.css
+swaylock/wallpaper.jpg
