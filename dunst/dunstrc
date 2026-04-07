@@ -58,6 +58,7 @@
     mouse_middle_click = do_action, close_current
     mouse_right_click = close_all
 
+
 [experimental]
     per_monitor_dpi = false
     pause_on_mouse_over = false
