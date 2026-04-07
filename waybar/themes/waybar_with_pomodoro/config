@@ -139,5 +139,13 @@
     "exec": "waybar-module-pomodoro --no-work-icons",
     "on-click": "waybar-module-pomodoro toggle",
     "on-click-right": "waybar-module-pomodoro reset"
-  }
+  },
+  "custom/pomatez": {
+    "exec": "~/.config/waybar/scripts/pomatez.sh",
+    "return-type": "json",
+    "interval": 1,
+    "on-click": "pomatez || pomatez > /dev/null 2>&1 &",
+    "on-right-click": "pkill pomatez",
+    "tooltip": true
+  },
 }

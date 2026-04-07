@@ -34,3 +34,7 @@ output_path = '~/.config/fish/conf.d/10_colors.fish'
 [templates.rofi-colors]
 input_path  = "~/.config/matugen/templates/rofi-colors.rasi"
 output_path = "~/.config/rofi/colors.rasi"
+
+[templates.dunst]
+input_path = '~/.config/matugen/templates/dunst.ini'
+output_path = '~/.config/dunst/dunstrc.d/colors.conf'

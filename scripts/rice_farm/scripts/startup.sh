@@ -4,7 +4,7 @@ username="ayush"
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Clean Slate (Wayland tools only)
-APPS="gammastep waybar dunst kanshi"
+APPS="gammastep waybar kanshi"
 killall -q $APPS 2>/dev/null
 
 # Wait for apps to die
@@ -24,7 +24,7 @@ sleep 1  # Give kanshi time to start and read current state
 pkill -USR1 kanshi 2>/dev/null || true
 
 # 2. Notification agent
-dunst &
+# dunst & (in swayrc)
 
 # 3. Screen color temperature (Wayland native)
 gammastep &

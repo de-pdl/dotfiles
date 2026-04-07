@@ -5,3 +5,4 @@ nvim/colors/matugen.lua
 rofi/colors.rasi
 waybar/colors.css
 swaylock/wallpaper.jpg
+dunst/dunstrc.d/colors.conf

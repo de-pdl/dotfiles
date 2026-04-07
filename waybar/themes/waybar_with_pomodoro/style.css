@@ -108,6 +108,22 @@
   margin-right: 5px;
 }
 
+#custom-pomatez {
+    padding: 0 10px;
+    min-width: 60px;
+    color: #ffffff;
+    font-weight: bold;
+}
+
+#custom-pomatez.active {
+    background-color: #ff6b6b;
+}
+
+#custom-pomatez.off {
+    background-color: transparent;
+    color: #666666;
+}
+
 #custom-pomodoro:hover {
   background-color: rgb(41, 42, 53);
   color: #c6d0f5;

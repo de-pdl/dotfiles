@@ -29,8 +29,9 @@ config_folders=(
     "kanshi"
     "matugen"
 
-    # demenu
+    # demenu notifcatin
     "rofi"
+    "dunst"
 )
 
 # --- Helper function ---
