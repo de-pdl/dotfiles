@@ -29,7 +29,7 @@ bindsym $mod+b exec $browser
 bindsym $mod+q kill
 
 # start rofi (ensure you installed rofi-wayland)
-bindsym ctrl+space exec "rofi -show combi -modi window,drun,combi -combi-modi window,drun"
+bindsym alt+space exec "rofi -show combi -modi window,drun,combi -combi-modi window,drun"
 exec_always pkill waybar; waybar -c ~/.dotfiles/waybar/config -s ~/.dotfiles/waybar/style.css
 
 
