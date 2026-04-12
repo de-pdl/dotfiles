@@ -31,6 +31,27 @@
   transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
 }
 
+#custom-tomat {
+  padding: 0 10px;
+  font-weight: bold;
+}
+
+#custom-tomat.work {
+  color: #51cf66;
+}
+
+#custom-tomat.work-paused {
+  color: #ffa94d;
+}
+
+#custom-tomat.break {
+  color: #4dabf7;
+}
+
+#custom-tomat.break-paused {
+  color: #748ffc;
+}
+
 #workspaces {
   padding: 2px;
   margin-left: 7px;
