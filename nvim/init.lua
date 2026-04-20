@@ -4,6 +4,7 @@ local config = require("config")
 -- ─── Load user settings ────────────────────────────────
 require("config.options")
 require("config.keymaps")
+require("config.filetypes")
 
 -- ─── Colorscheme ───────────────────────────────────────
 if config.is_remote then

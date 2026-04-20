@@ -30,13 +30,17 @@ return {
 			preset = "modern",
 			delay = 300,
 			spec = {
+				-- Leader groups
 				{ "<leader>b", group = "buffers" },
-				{ "<leader>d", group = "diagnostics" },
+				{ "<leader>c", group = "code" },
+				{ "<leader>d", group = "debug / diagnostics" },
 				{ "<leader>f", group = "find" },
-				{ "<leader>l", group = "lsp / lint / format" },
 				{ "<leader>g", group = "git" },
 				{ "<leader>h", group = "hunk" },
-				{ "<leader>c", group = "code" },
+				{ "<leader>l", group = "lsp / lint / format" },
+				{ "<leader>t", group = "terminal" },
+
+				-- Non-leader groups (plugin defaults)
 				{ "gc", group = "comment" },
 				{ "ys", group = "surround add", mode = { "n" } },
 				{ "cs", group = "surround change", mode = { "n" } },
