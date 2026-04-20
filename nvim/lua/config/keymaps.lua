@@ -5,10 +5,10 @@ vim.g.maplocalleader = " "
 local map = vim.keymap.set
 
 -- ─── Clipboard ─────────────────────────────────────────
-map({"n", "v"}, "<leader>y", '"+y', { desc = "Yank to system clipboard" })
+map({ "n", "v" }, "<leader>y", '"+y', { desc = "Yank to system clipboard" })
 map("n", "<leader>Y", '"+Y', { desc = "Yank line to system clipboard" })
-map({"n", "v"}, "<leader>p", '"+p', { desc = "Paste from system clipboard" })
-map({"n", "v"}, "<leader>P", '"+P', { desc = "Paste before from system clipboard" })
+map({ "n", "v" }, "<leader>p", '"+p', { desc = "Paste from system clipboard" })
+map({ "n", "v" }, "<leader>P", '"+P', { desc = "Paste before from system clipboard" })
 
 -- ─── Save / Quit ───────────────────────────────────────
 map("n", "<leader>w", ":w<CR>", { desc = "Save file" })
@@ -33,9 +33,6 @@ map("n", "<leader>bn", ":bnext<CR>", { desc = "Next buffer" })
 map("n", "<leader>bp", ":bprevious<CR>", { desc = "Previous buffer" })
 map("n", "<leader>bd", ":bd<CR>", { desc = "Delete/close buffer" })
 
--- ─── Terminal ──────────────────────────────────────────
-map("n", "<leader>t", ":terminal<CR>", { desc = "Open terminal" })
-
 -- ─── Insert Mode ───────────────────────────────────────
 map("i", "jk", "<Esc>", { desc = "Exit insert mode" })
 
@@ -47,8 +44,12 @@ map("v", ">", ">gv", { desc = "Indent right and keep selection" })
 map("v", "p", '"_dP', { desc = "Paste over selection without yanking" })
 
 -- ─── Diagnostics ───────────────────────────────────────
-map("n", "[d", function() vim.diagnostic.jump({ count = -1 }) end, { desc = "Previous diagnostic" })
-map("n", "]d", function() vim.diagnostic.jump({ count = 1 }) end, { desc = "Next diagnostic" })
+map("n", "[d", function()
+	vim.diagnostic.jump({ count = -1 })
+end, { desc = "Previous diagnostic" })
+map("n", "]d", function()
+	vim.diagnostic.jump({ count = 1 })
+end, { desc = "Next diagnostic" })
 map("n", "<leader>dd", vim.diagnostic.open_float, { desc = "Show diagnostic float" })
 map("n", "<leader>dq", vim.diagnostic.setloclist, { desc = "Diagnostics to loclist" })
 
