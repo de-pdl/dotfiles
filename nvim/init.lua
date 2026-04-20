@@ -8,7 +8,7 @@ require("config.filetypes")
 
 -- ─── Colorscheme ───────────────────────────────────────
 if config.is_remote then
-	vim.cmd.colorscheme("gruvbox")
+	vim.cmd.colorscheme("paramount")
 else
 	vim.cmd.colorscheme("matugen")
 end
