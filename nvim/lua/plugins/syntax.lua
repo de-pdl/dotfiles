@@ -1,54 +1,68 @@
-local languages = { "c", "html", "css", "bash", "markdown", "lua", "python" }
-local lsp_servers = { "clangd", "html", "cssls", "bashls", "pyright" }
+local languages = {
+  -- General
+  "c", "cpp", "lua", "python", "bash", "markdown", "markdown_inline",
+  "html", "css", "json", "yaml", "toml",
+  -- Hardware / HDL
+  "vhdl",
+  -- Config / build
+  "make", "cmake", "ninja",
+  -- Git + docs
+  "gitcommit", "gitignore", "diff",
+  -- Vim
+  "vim", "vimdoc", "query",
+}
 
 return {
+  -- ─── Treesitter ──────────────────────────────────────
   {
     "nvim-treesitter/nvim-treesitter",
+    branch = "main",
     build = ":TSUpdate",
+    lazy = false,
     config = function()
       local ts = require("nvim-treesitter")
       ts.install(languages)
-      
+
       vim.api.nvim_create_autocmd("FileType", {
         pattern = languages,
         callback = function()
           vim.treesitter.start()
-        end,
-      })
-      
-      vim.api.nvim_create_autocmd("FileType", {
-        pattern = languages,
-        callback = function()
           vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
         end,
       })
     end,
   },
+
+  -- ─── Treesitter text objects ─────────────────────────
   {
-    "neovim/nvim-lspconfig",
+    "nvim-treesitter/nvim-treesitter-textobjects",
+    branch = "main",
     dependencies = {
-      "williamboman/mason.nvim",
-      "williamboman/mason-lspconfig.nvim",
+      { "nvim-treesitter/nvim-treesitter", branch = "main" },
     },
+    event = "VeryLazy",
     config = function()
-      require("mason").setup()
-      require("mason-lspconfig").setup({
-        ensure_installed = lsp_servers,
+      require("nvim-treesitter-textobjects").setup({
+        select = {
+          lookahead = true,
+          selection_modes = {
+            ["@parameter.outer"] = "v",
+            ["@function.outer"]  = "V",
+            ["@class.outer"]     = "V",
+          },
+          include_surrounding_whitespace = false,
+        },
       })
-      
-      for _, lsp in ipairs(lsp_servers) do
-        vim.lsp.config(lsp, {})
-        vim.lsp.enable(lsp)
-      end
-      
-      vim.api.nvim_create_autocmd("LspAttach", {
-        callback = function(args)
-          local opts = { buffer = args.buf }
-          vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts)
-          vim.keymap.set('n', 'K', vim.lsp.buf.hover, opts)
-          vim.keymap.set('n', '<leader>rn', vim.lsp.buf.rename, opts)
-        end,
-      })
+
+      local select = require("nvim-treesitter-textobjects.select")
+      local map = vim.keymap.set
+
+      map({ "x", "o" }, "af", function() select.select_textobject("@function.outer",  "textobjects") end, { desc = "a function" })
+      map({ "x", "o" }, "if", function() select.select_textobject("@function.inner",  "textobjects") end, { desc = "inner function" })
+      map({ "x", "o" }, "ac", function() select.select_textobject("@class.outer",     "textobjects") end, { desc = "a class" })
+      map({ "x", "o" }, "ic", function() select.select_textobject("@class.inner",     "textobjects") end, { desc = "inner class" })
+      map({ "x", "o" }, "aa", function() select.select_textobject("@parameter.outer", "textobjects") end, { desc = "a parameter" })
+      map({ "x", "o" }, "ia", function() select.select_textobject("@parameter.inner", "textobjects") end, { desc = "inner parameter" })
     end,
-  }
+  },
 }
