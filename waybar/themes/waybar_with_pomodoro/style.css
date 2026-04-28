@@ -1,7 +1,7 @@
 /* --- Global Styles --- */
 * {
-  font-family: "SF Pro Text", "Inter", "Segoe UI", "NotoSans Nerd Font",
-    sans-serif;
+  font-family:
+    "SF Pro Text", "Inter", "Segoe UI", "NotoSans Nerd Font", sans-serif;
   font-size: 13px;
   min-height: 0;
   padding-right: 0px;
@@ -28,7 +28,9 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   min-width: 0;
   border: none;
-  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+  transition:
+    background-color 0.2s ease-in-out,
+    color 0.2s ease-in-out;
 }
 
 #custom-tomat {
@@ -84,6 +86,12 @@
   box-shadow: inset 0 0 0 1px rgba(153, 209, 219, 0.2);
 }
 
+#workspaces button.visible:not(.focused) {
+  color: #f2a7c3;
+  background-color: rgba(242, 167, 195, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(242, 167, 195, 0.15);
+}
+
 #workspaces button.urgent {
   color: #e78284;
   background-color: rgba(231, 130, 132, 0.1);
@@ -104,7 +112,9 @@
   box-shadow: 0 1px 3px rgba(153, 209, 219, 0.2);
   min-width: 0;
   border: none;
-  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+  transition:
+    background-color 0.2s ease-in-out,
+    color 0.2s ease-in-out;
 }
 
 #clock:hover {
@@ -121,8 +131,11 @@
   min-width: 0;
   border: none;
   outline: none;
-  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out,
-    outline 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  transition:
+    background-color 0.2s ease-in-out,
+    color 0.2s ease-in-out,
+    outline 0.2s ease-in-out,
+    box-shadow 0.2s ease-in-out;
   color: #babbf1;
   font-weight: 600;
   margin-left: 5px;
@@ -130,19 +143,19 @@
 }
 
 #custom-pomatez {
-    padding: 0 10px;
-    min-width: 60px;
-    color: #ffffff;
-    font-weight: bold;
+  padding: 0 10px;
+  min-width: 60px;
+  color: #ffffff;
+  font-weight: bold;
 }
 
 #custom-pomatez.active {
-    background-color: #ff6b6b;
+  background-color: #ff6b6b;
 }
 
 #custom-pomatez.off {
-    background-color: transparent;
-    color: #666666;
+  background-color: transparent;
+  color: #666666;
 }
 
 #custom-pomodoro:hover {
@@ -174,7 +187,9 @@
   box-shadow: none;
   min-width: 0;
   border: none;
-  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+  transition:
+    background-color 0.2s ease-in-out,
+    color 0.2s ease-in-out;
 }
 
 #bluetooth:hover,
