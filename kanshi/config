@@ -1,27 +1,28 @@
-# ============================================
-# PC PROFILES
-# ============================================
 
-profile pc_standard {
-    output "HDMI-A-2" mode 1920x1080@144.001Hz position 0,0
-    output "DP-4"     mode 2560x1440@143.995Hz position 1920,0
-}
+# ============================================
+# PC PROFILES (matched by monitor identity, not port)
+# ============================================
 
 profile pc_no_tv {
-    output "HDMI-A-1" disable
-    output "HDMI-A-2" mode 1920x1080@144.001Hz position 0,0
-    output "DP-4"     mode 2560x1440@143.995Hz position 1920,0
+    output "Acer Technologies KG272 S 0x11320F85" mode 1920x1080@144.001Hz position 0,0
+    output "Microstep MAG 27CQ6F CD9M074900313"   mode 2560x1440@143.995Hz position 1920,0
 }
 
-profile pc_with_tv {
-    output "HDMI-A-1" mode 1280x720@60Hz position 3840,0
-    output "HDMI-A-2" mode 1920x1080@144.001Hz position 0,0
-    output "DP-4"     mode 2560x1440@143.995Hz position 1920,0
+profile pc_tv_off {
+    output "Acer Technologies KG272 S 0x11320F85"          mode 1920x1080@144.001Hz position 0,0
+    output "Microstep MAG 27CQ6F CD9M074900313"            mode 2560x1440@143.995Hz position 1920,0
+    output "Microtek International Inc. MTK LCDTV Unknown" disable
 }
 
+profile pc_tv_on {
+    output "Acer Technologies KG272 S 0x11320F85"          mode 1920x1080@144.001Hz position 0,0
+    output "Microstep MAG 27CQ6F CD9M074900313"            mode 2560x1440@143.995Hz position 1920,0
+    output "Microtek International Inc. MTK LCDTV Unknown" mode 1280x720@60Hz       position 4480,0
+}
 # ============================================
 # LAPTOP DOCKED PROFILES
 # ============================================
+
 
 profile laptop_clamshell {
     output "eDP-1"    disable
