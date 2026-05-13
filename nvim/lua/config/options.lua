@@ -2,7 +2,6 @@
 -- Editor options (extracted from init.lua)
 
 local opt = vim.opt
-
 -- ─── Line Numbers ──────────────────────────────────────
 opt.number = true
 opt.relativenumber = true
@@ -29,7 +28,7 @@ opt.signcolumn = "yes"
 opt.cursorline = true
 opt.scrolloff = 8
 opt.sidescrolloff = 8
-opt.wrap = false
+opt.wrap = true
 
 -- ─── Files ─────────────────────────────────────────────
 opt.swapfile = false

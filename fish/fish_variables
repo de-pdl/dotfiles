@@ -1,6 +1,37 @@
 # This file contains fish universal variable definitions.
 # VERSION: 3.0
 SETUVAR __fish_initialized:4300
+SETUVAR _fish_abbr__2E_2E_2E_:cd\x20\x2e\x2e/\x2e\x2e
+SETUVAR _fish_abbr__2E_2E_2E_2E_:cd\x20\x2e\x2e/\x2e\x2e/\x2e\x2e
+SETUVAR _fish_abbr_cd_2E_:cd\x20\x2e\x2e
+SETUVAR _fish_abbr_config:cd\x20\x7e/\x2econfig
+SETUVAR _fish_abbr_cp:cp\x20\x2div
+SETUVAR _fish_abbr_fishrc:nvim\x20\x7e/\x2econfig/fish/config\x2efish
+SETUVAR _fish_abbr_g:git
+SETUVAR _fish_abbr_ga:git\x20add
+SETUVAR _fish_abbr_gaa:git\x20add\x20\x2e
+SETUVAR _fish_abbr_gc:git\x20commit
+SETUVAR _fish_abbr_gd:git\x20diff
+SETUVAR _fish_abbr_glog:git\x20log\x20\x2d\x2doneline\x20\x2d\x2dgraph
+SETUVAR _fish_abbr_gp:git\x20push
+SETUVAR _fish_abbr_gpl:git\x20pull
+SETUVAR _fish_abbr_gs:git\x20status
+SETUVAR _fish_abbr_gsh:git\x20show
+SETUVAR _fish_abbr_l:ls\x20\x2dl
+SETUVAR _fish_abbr_la:ls\x20\x2dla
+SETUVAR _fish_abbr_ll:ls\x20\x2dlah
+SETUVAR _fish_abbr_mkdir:mkdir\x20\x2dp
+SETUVAR _fish_abbr_mv:mv\x20\x2div
+SETUVAR _fish_abbr_nvimrc:nvim\x20\x7e/\x2econfig/nvim/init\x2elua
+SETUVAR _fish_abbr_pacman:pacman\x20\x2d\x2dcolor\x3dauto
+SETUVAR _fish_abbr_paru:paru\x20\x2d\x2dcolor\x3dauto
+SETUVAR _fish_abbr_rm:rm\x20\x2div
+SETUVAR _fish_abbr_scripts:cd\x20\x7e/\x2econfig/scripts
+SETUVAR _fish_abbr_swayrc:nvim\x20\x7e/\x2econfig/sway/config
+SETUVAR _fish_abbr_v:nvim
+SETUVAR _fish_abbr_vi:nvim
+SETUVAR _fish_abbr_vim:nvim
+SETUVAR _fish_abbr_yay:yay\x20\x2d\x2dcolor\x3dauto
 SETUVAR _fisher_edc_2F_bass_files:\x7e/\x2econfig/fish/functions/__bass\x2epy\x1e\x7e/\x2econfig/fish/functions/bass\x2efish
 SETUVAR _fisher_jorgebucaran_2F_fisher_files:\x7e/\x2econfig/fish/functions/fisher\x2efish\x1e\x7e/\x2econfig/fish/completions/fisher\x2efish
 SETUVAR _fisher_plugins:jorgebucaran/fisher\x1eedc/bass
@@ -75,6 +106,7 @@ SETUVAR pure_symbol_reverse_prompt:\u276e
 SETUVAR pure_symbol_ssh_prefix:
 SETUVAR pure_symbol_title_bar_separator:\x2d
 SETUVAR pure_symbol_virtualenv_prefix:
+SETUVAR pure_system_time_format:\x2b\x25T
 SETUVAR pure_threshold_command_duration:5
 SETUVAR pure_truncate_prompt_current_directory_keeps:\x2d1
 SETUVAR pure_truncate_window_title_current_directory_keeps:\x2d1

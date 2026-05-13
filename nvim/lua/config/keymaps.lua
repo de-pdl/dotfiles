@@ -1,7 +1,7 @@
 -- Set the leader key to Space
 vim.g.mapleader = " "
-vim.g.maplocalleader = " "
-
+-- vim.g.maplocalleader = " "
+vim.g.maplocalleader = ","
 local map = vim.keymap.set
 
 -- ─── Clipboard ─────────────────────────────────────────
