@@ -16,6 +16,7 @@ local languages = {
 	"vhdl",
 	-- Scientific / engineering
 	"matlab",
+	"latex",
 	-- Config / build
 	"make",
 	"cmake",
