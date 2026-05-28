@@ -78,9 +78,10 @@ bindsym Print exec grim ~/Pictures/$(date +%Y-%m-%d_%H-%M-%S).png
 # Select area and save to file
 bindsym Shift+Print exec grim -g "$(slurp)" ~/Pictures/$(date +%Y-%m-%d_%H-%M-%S).png
 
+
 ## Clipboard Screenshots
 # Select area and copy to clipboard
-bindsym Ctrl+Shift+s exec grim -g "$(slurp)" - | wl-copy -t image/png
+bindsym Ctrl+Shift+s exec bash -c 'wayfreeze & WF=$!; sleep 0.5; grim -g "$(slurp 2>/dev/null)" - | wl-copy -t image/png; kill $WF'
 
 # Active window to clipboard (Wayland equivalent of xdotool)
 bindsym $mod+Ctrl+Print exec grim -g "$(swaymsg -t get_tree | jq -j '.. | select(.type?) | select(.focused).rect | "\(.x),\(.y) \(.width)x\(.height)"')" - | wl-copy
@@ -163,7 +164,7 @@ input "type:touchpad" {
     dwt enabled
     # These two lines fix the "sticky drag" issue
     drag enabled
-    drag_lock disabled 
+    drag_lock disabled
 }
 # The key here is the 'idlehint' and explicit 'lock' command
 exec swayidle -w \
