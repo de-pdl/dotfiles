@@ -3,6 +3,10 @@
 SETUVAR __fish_initialized:4300
 SETUVAR _fish_abbr__2E_2E_2E_:cd\x20\x2e\x2e/\x2e\x2e
 SETUVAR _fish_abbr__2E_2E_2E_2E_:cd\x20\x2e\x2e/\x2e\x2e/\x2e\x2e
+SETUVAR _fish_abbr_ai_2D_down:docker\x20compose\x20\x2df\x20\x7e/homelab/ai\x2dstack/local/docker\x2dcompose\x2eyml\x20down
+SETUVAR _fish_abbr_ai_2D_ps:docker\x20compose\x20\x2df\x20\x7e/homelab/ai\x2dstack/local/docker\x2dcompose\x2eyml\x20ps
+SETUVAR _fish_abbr_ai_2D_up:docker\x20compose\x20\x2df\x20\x7e/homelab/ai\x2dstack/local/docker\x2dcompose\x2eyml\x20up\x20\x2dd
+SETUVAR _fish_abbr_ai_2D_vram:docker\x20exec\x20ollama\x20nvidia\x2dsmi\x20\x2d\x2dquery\x2dgpu\x3dmemory\x2eused\x2cmemory\x2etotal\x20\x2d\x2dformat\x3dcsv\x2cnoheader
 SETUVAR _fish_abbr_cd_2E_:cd\x20\x2e\x2e
 SETUVAR _fish_abbr_config:cd\x20\x7e/\x2econfig
 SETUVAR _fish_abbr_cp:cp\x20\x2div
