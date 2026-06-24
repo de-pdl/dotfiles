@@ -1,0 +1,10 @@
+/* GTK 3 & 4 Color Variables */
+@define-color accent_color @{primary.hex};
+@define-color accent_fg_color @{on_primary.hex};
+@define-color window_bg_color @{surface.hex};
+@define-color window_fg_color @{on_surface.hex};
+@define-color headerbar_bg_color @{surface_container.hex};
+@define-color headerbar_fg_color @{on_surface.hex};
+@define-color card_bg_color @{surface_container_low.hex};
+@define-color popover_bg_color @{surface_container_high.hex};
+@define-color popover_fg_color @{on_surface.hex};

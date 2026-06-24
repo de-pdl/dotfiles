@@ -1,0 +1,40 @@
+[config]
+prefix = '@'
+
+
+
+#[templates.polybar]
+#input_path = '~/.config/matugen/templates/polybar.ini'
+#output_path = '~/.config/polybar/colors.ini'
+
+[templates.alacritty]
+input_path = '~/.config/matugen/templates/alacritty.toml'
+output_path = '~/.config/alacritty/colors.toml'
+
+[templates.nvim]
+input_path = '~/.config/matugen/templates/nvim.lua'
+output_path = '~/.config/nvim/colors/matugen.lua'
+
+[templates.gtk3]
+input_path = '~/.config/matugen/templates/gtk-colors.css'
+output_path = '~/.config/gtk-3.0/colors.css'
+
+[templates.gtk4]
+input_path = '~/.config/matugen/templates/gtk-colors.css'
+output_path = '~/.config/gtk-4.0/colors.css'
+
+[templates.waybar]
+input_path = '~/.config/matugen/templates/waybar-colors.css'
+output_path = '~/.config/waybar/colors.css'
+
+[templates.fish]
+input_path = '~/.config/matugen/templates/10_colors.fish.template'
+output_path = '~/.config/fish/conf.d/10_colors.fish'
+
+[templates.rofi-colors]
+input_path  = "~/.config/matugen/templates/rofi-colors.rasi"
+output_path = "~/.config/rofi/colors.rasi"
+
+[templates.dunst]
+input_path = '~/.config/matugen/templates/dunst.ini'
+output_path = '~/.config/dunst/dunstrc.d/colors.conf'

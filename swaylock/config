@@ -1,0 +1,6 @@
+# ~/.config/swaylock/config
+
+scaling=fill
+effect-blur=7x2
+image=~/.config/swaylock/wallpaper.jpg
+
