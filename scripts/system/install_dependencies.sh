@@ -30,6 +30,9 @@ PACMAN_PKGS=(
     dunst gammastep kanshi
     starship
 
+    # Rice menu quick-settings (volume, brightness)
+    pamixer brightnessctl
+
     # Fonts
     ttf-jetbrains-mono-nerd ttf-hack-nerd
 )

@@ -20,7 +20,7 @@ notify_success() {
 }
 
 check_dependencies() {
-    local deps=("rofi" "notify-send" "swaymsg" "waybar")
+    local deps=("rofi" "notify-send" "swaymsg" "waybar" "pamixer" "brightnessctl" "gammastep" "swaylock")
     for dep in "${deps[@]}"; do
         command -v "$dep" &>/dev/null || error_exit "$dep not installed"
     done

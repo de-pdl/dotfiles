@@ -9,11 +9,7 @@ echo "⚙️  Configuring greetd (Login Manager)..."
 # Back up the original config just in case
 sudo cp /etc/greetd/config.toml /etc/greetd/config.toml.bak
 
-
 # Replace the default greetd command with tuigreet launching sway
-echo "⚙️  Configuring greetd (Login Manager)..."
-sudo cp /etc/greetd/config.toml /etc/greetd/config.toml.bak
-
 # 🔍 Detect if an NVIDIA GPU is physically present
 if lspci | grep -iq "nvidia"; then
     echo "🏎️  NVIDIA GPU detected! Adding --unsupported-gpu flag to Greetd..."
@@ -73,8 +69,8 @@ if [ -d "$HOOK_DIR" ]; then
 #!/bin/bash
 echo "🔄 Git pull detected! Syncing dotfiles..."
 REPO_DIR=$(git rev-parse --show-toplevel)
-if [ -f "$REPO_DIR/install.sh" ]; then
-    "$REPO_DIR/install.sh"
+if [ -f "$REPO_DIR/scripts/system/install.sh" ]; then
+    "$REPO_DIR/scripts/system/install.sh"
 fi
 EOF
     chmod +x "$HOOK_FILE"
@@ -82,4 +78,4 @@ EOF
 fi
 
 echo ""
-echo "🎉 System configuration complete! You can now run ./install.sh to link your dotfiles."
+echo "🎉 System configuration complete! You can now run ./scripts/system/install.sh to link your dotfiles."

@@ -13,8 +13,6 @@ while pgrep -u $UID -x "$(echo $APPS | tr ' ' '|')" >/dev/null; do
 done
 
 
-log ("death?")
-
 # --- Core Services ---
 # 1. Monitor Layout (Kanshi is the master now)
 kanshi &

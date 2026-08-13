@@ -5,13 +5,18 @@ floating_modifier $mod
 
 exec_always dunst
 
-exec_always --no-startup-id sh -c "/home/$username/.config/scripts/rice_farm/startup.sh"
+exec_always --no-startup-id sh -c "/home/$username/.config/scripts/rice_farm/scripts/startup.sh"
 
 # --- 2. Clamshell Mode ---
 # When lid closes: disable internal screen. When opens: enable it.
 # This triggers Scenario 4 automatically.
 bindswitch --locked lid:on output eDP-1 disable
 bindswitch --locked lid:off output eDP-1 enable
+
+# bindswitch only fires on a lid open/close *event*, so a plain config
+# reload while the lid is already closed won't disable eDP-1. Re-sync
+# eDP-1 against the actual lid state on every startup/reload.
+exec_always --no-startup-id sh -c 'grep -q closed /proc/acpi/button/lid/*/state 2>/dev/null && swaymsg output eDP-1 disable || swaymsg output eDP-1 enable'
 
 exec_always --no-startup-id /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
 for_window [app_id="Gnome-control-center"] floating enable
@@ -30,7 +35,6 @@ bindsym $mod+q kill
 
 # start rofi (ensure you installed rofi-wayland)
 bindsym alt+space exec "rofi -show combi -modi window,drun,combi -combi-modi window,drun"
-exec_always pkill waybar; waybar -c ~/.dotfiles/waybar/config -s ~/.dotfiles/waybar/style.css
 
 
 bindsym $mod+Shift+Return exec ~/.config/scripts/rice_farm/main_rice.sh
@@ -97,6 +101,11 @@ bindsym $mod+7 workspace number $ws7
 bindsym $mod+8 workspace number $ws8
 bindsym $mod+9 workspace number $ws9
 bindsym $mod+0 workspace number $ws10
+
+#show scratchpad
+bindsym $mod+minus scratchpad show
+# move focusced window to scratchpad
+bindsym $mod+Shift+minus move scratchpad
 
 # move focused container to workspace
 bindsym $mod+Shift+1 move container to workspace number $ws1

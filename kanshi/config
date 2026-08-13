@@ -30,6 +30,12 @@ profile laptop_clamshell {
     output "DP-4"     mode 2560x1440@144Hz position 1920,0
 }
 
+profile laptop_clamshell_dual_pc {
+    output "eDP-1" disable
+    output "Acer Technologies KG272 S 0x11320F85" mode 1920x1080@144.001Hz position 0,0
+    output "Microstep MAG 27CQ6F CD9M074900313"   mode 2560x1440@143.995Hz position 1920,0
+}
+
 profile laptop_docked {
     output "Sharp Corporation LQ135P1JX51 0x000F23A0" mode 2256x1504@60Hz scale 1.5 position 1920,0
     output * position 0,0
