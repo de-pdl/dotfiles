@@ -25,9 +25,19 @@ profile pc_tv_on {
 
 
 profile laptop_clamshell {
-    output "eDP-1"    disable
+    output "eDP-1"    disable position 4480,0
     output "HDMI-A-2" mode 1920x1080@144Hz position 0,0
     output "DP-4"     mode 2560x1440@144Hz position 1920,0
+}
+
+profile laptop_clamshell_dual_pc {
+    # Positioned off to the side (clear of both monitors below) as a
+    # safety net: if eDP-1 ever gets force-enabled by a stray bindswitch
+    # event instead of actually disabled, it lands here instead of
+    # overlapping the Acer at 0,0.
+    output "eDP-1" disable position 4480,0
+    output "Acer Technologies KG272 S 0x11320F85" mode 1920x1080@144.001Hz position 0,0
+    output "Microstep MAG 27CQ6F CD9M074900313"   mode 2560x1440@143.995Hz position 1920,0
 }
 
 profile laptop_docked {
