@@ -12,6 +12,9 @@ exec_always dunst
 
 exec_always --no-startup-id sh -c "/home/$username/.config/scripts/rice_farm/startup.sh"
 
+# Clipboard history: cliphist watches wl-clipboard for text/image changes
+exec_always --no-startup-id sh -c 'pkill -f "wl-paste --watch cliphist store"; wl-paste --watch cliphist store'
+
 # --- 2. Clamshell Mode ---
 # When lid closes: disable internal screen. When opens: enable it.
 # This triggers Scenario 4 automatically.
@@ -90,6 +93,9 @@ bindsym Ctrl+Shift+s exec bash -c 'wayfreeze & WF=$!; sleep 0.5; grim -g "$(slur
 
 # Active window to clipboard (Wayland equivalent of xdotool)
 bindsym $mod+Ctrl+Print exec grim -g "$(swaymsg -t get_tree | jq -j '.. | select(.type?) | select(.focused).rect | "\(.x),\(.y) \(.width)x\(.height)"')" - | wl-copy
+
+## Clipboard history (cliphist)
+bindsym $mod+Shift+v exec bash -c 'cliphist list | rofi -dmenu -p clipboard | cliphist decode | wl-copy'
 
 # switch to workspace
 bindsym $mod+1 workspace number $ws1
