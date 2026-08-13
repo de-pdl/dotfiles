@@ -10,7 +10,6 @@ padding = { x = 12, y = 12 }
 
 # Adjust for a "glass" look; requires a compositor like Hyprland or Picom
 opacity = 0.8
-blur = true
 
 # Removes title bars for a cleaner look
 decorations = "None"

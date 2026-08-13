@@ -4,17 +4,10 @@
 reload_sway() {
     log "Reloading Sway configuration..."
     swaymsg reload || error_exit "Failed to reload Sway"
-    sleep 1
-    export MATUGEN_PREFER="darkness"
-    
-    # Reapply monitor layout
-    if [[ -f "$SCRIPTS_DIR/reload_monitors.sh" ]]; then
-        bash "$SCRIPTS_DIR/reload_monitors.sh"
-    else
-        log "⚠️ reload_monitors.sh not found"
-    fi
-    
-    sleep 1
-    restart_waybar
+    # swaymsg reload re-runs sway/config's exec_always lines, which invoke
+    # startup.sh — that already restarts kanshi/gammastep/waybar and
+    # reloads the wallpaper. Doing it again here raced a second kanshi
+    # restart against the first and corrupted the monitor output mid-modeset
+    # (symptom: partial black screen after reload).
     log "✅ Sway configuration reloaded"
 }
