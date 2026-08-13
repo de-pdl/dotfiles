@@ -20,6 +20,7 @@
 /* --- Left Modules --- */
 #workspaces,
 #custom-uptime,
+#scratchpad,
 #cpu {
   background-color: #1a1b26;
   padding: 0.3rem 0.7rem;
@@ -60,14 +61,22 @@
   margin-right: 5px;
 }
 
+#scratchpad {
+  padding: 0.3rem 0.6rem;
+  margin: 5px 5px 5px 0px;
+  color: #babbf1;
+}
+
 #custom-uptime {
   margin-right: 5px;
 }
 
 /* Hover effects for left modules */
 #custom-uptime:hover,
+#scratchpad:hover,
 #cpu:hover {
   background-color: rgb(41, 42, 53);
+  color: #c6d0f5;
 }
 
 #workspaces button {

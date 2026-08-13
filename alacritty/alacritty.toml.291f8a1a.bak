@@ -37,8 +37,3 @@ save_to_clipboard = true
 [env]
 # Standard terminal environment variable
 TERM = "xterm-256color"
-
-[[keyboard.bindings]]
-key = "Return"
-mods = "Shift"
-chars = "\u001B\r"

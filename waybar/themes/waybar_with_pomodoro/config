@@ -5,6 +5,7 @@
   "spacing": 0,
   "modules-left": [
     "sway/workspaces",
+    "sway/scratchpad",
     "custom/uptime",
     "cpu"
   ],
@@ -26,9 +27,13 @@
   "persistent-workspaces": {
     "1": ["DP-2"],
     "2": ["DP-2"],
-    "3": ["eDP-1"],
-    "4": ["eDP-1"]
   }
+},
+"sway/scratchpad": {
+    "format": "󱞁 {count}",
+    "show-empty": false,
+    "tooltip": true,
+    "tooltip-format": "{app}: {title}"
 },
   "bluetooth": {
     "format": "󰂲",
