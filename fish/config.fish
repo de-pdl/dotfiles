@@ -3,6 +3,7 @@
 # FISH SHELL CONFIGURATION - Main Entry Point
 # =============================================================================
 
+
 # Disable default greeting
 set fish_greeting
 
@@ -25,10 +26,7 @@ end
 fish_add_path /home/ayush/.opencode/bin
 
 set -gx LITELLM_KEY "sk-admin-team-stack-2026"
+set -gx LLAMA_CACHE /mnt/vm/llama-models
+#source ~/.config/fish/conf.d/
 
 
-# --- ai-stack local (Ollama on 4070) ---
-abbr -a ai-up   'docker compose -f ~/homelab/ai-stack/local/docker-compose.yml up -d'
-abbr -a ai-down 'docker compose -f ~/homelab/ai-stack/local/docker-compose.yml down'
-abbr -a ai-ps   'docker compose -f ~/homelab/ai-stack/local/docker-compose.yml ps'
-abbr -a ai-vram 'docker exec ollama nvidia-smi --query-gpu=memory.used,memory.total --format=csv,noheader'

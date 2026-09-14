@@ -1,3 +1,8 @@
+# Import environment variables into the systemd and dbus user sessions
+exec systemctl --user import-environment PATH XDG_CURRENT_DESKTOP
+exec hash dbus-update-activation-environment 2>/dev/null && dbus-update-activation-environment --systemd PATH XDG_CURRENT_DESKTOP
+
+
 set $mod Mod4
 set $username "ayush"
 font pango:Hack 9
