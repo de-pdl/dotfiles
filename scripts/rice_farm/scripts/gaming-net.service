@@ -1,0 +1,12 @@
+[Unit]
+Description=Gaming Mode network priority (DSCP mark game traffic for WMM)
+After=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/sbin/gaming-net start
+ExecStop=/usr/local/sbin/gaming-net stop
+
+[Install]
+WantedBy=multi-user.target
