@@ -193,3 +193,4 @@ exec_always --no-startup-id mkfifo /tmp/xobpipe && tail -f /tmp/xobpipe | xob -t
 
 exec systemctl --user import-environment WAYLAND_DISPLAY XDG_SESSION_TYPE
 exec dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_SESSION_TYPE SWAYSOCK
+include ~/.config/sway/config.local

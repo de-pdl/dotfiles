@@ -6,3 +6,6 @@ rofi/colors.rasi
 waybar/colors.css
 swaylock/wallpaper.jpg
 dunst/dunstrc.d/colors.conf
+
+# Per-host overrides
+sway/config.local
