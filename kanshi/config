@@ -41,17 +41,17 @@ profile laptop_clamshell_dual_pc {
 }
 
 profile laptop_docked {
-    output "Sharp Corporation LQ135P1JX51 0x000F23A0" mode 2256x1504@60Hz scale 1.5 position 1920,0
+    output "Sharp Corporation LQ135P1JX51 0x000F23A0" mode 2256x1504@60Hz scale 1.2 position 1920,0
     output * position 0,0
 }
 profile laptop_mobile {
-    output "Sharp Corporation LQ135P1JX51 0x000F23A0" mode 2256x1504@60Hz scale 1.5 position 0,0
+    output "Sharp Corporation LQ135P1JX51 0x000F23A0" mode 2256x1504@60Hz scale 1.2 position 0,0
 }
 
 profile laptop_docked2 {
     output "HDMI-A-2" mode 1920x1080@144Hz position 0,0
     output "DP-4"     mode 2560x1440@144Hz position 1920,0
-    output "eDP-1"    mode 2256x1504@60Hz scale 1.5 position 2448,1440
+    output "eDP-1"    mode 2256x1504@60Hz scale 1.2 position 2448,1440
 }
 
 
@@ -60,5 +60,5 @@ profile laptop_docked2 {
 # CATCH-ALL (Fallback)
 # ============================================
 profile catch_all {
-    output "eDP-1" mode 2256x1504@60Hz scale 1.5 position 0,0
+    output "eDP-1" mode 2256x1504@60Hz scale 1.2 position 0,0
 }

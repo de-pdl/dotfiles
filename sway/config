@@ -10,7 +10,7 @@ floating_modifier $mod
 
 exec_always dunst
 
-exec_always --no-startup-id sh -c "/home/$username/.config/scripts/rice_farm/startup.sh"
+exec_always --no-startup-id sh -c "/home/$username/.config/scripts/rice_farm/scripts/startup.sh"
 
 # Clipboard history: cliphist watches wl-clipboard for text/image changes
 exec_always --no-startup-id sh -c 'pkill -f "wl-paste --watch cliphist store"; wl-paste --watch cliphist store'

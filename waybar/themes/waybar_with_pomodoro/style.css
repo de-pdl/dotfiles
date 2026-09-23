@@ -1,3 +1,7 @@
+/* Colors come from matugen: rice_farm copies ~/.config/waybar/colors.css
+   next to this file so the relative import resolves. */
+@import "colors.css";
+
 /* --- Global Styles --- */
 * {
   font-family:
@@ -12,7 +16,7 @@
 /* --- Waybar Container --- */
 #waybar {
   background: transparent;
-  color: #c6d0f5;
+  color: @text;
   margin: 0px;
   font-weight: 500;
 }
@@ -20,8 +24,9 @@
 /* --- Left Modules --- */
 #workspaces,
 #custom-uptime,
+#scratchpad,
 #cpu {
-  background-color: #1a1b26;
+  background-color: @background;
   padding: 0.3rem 0.7rem;
   margin: 5px 0px;
   border-radius: 6px;
@@ -39,19 +44,19 @@
 }
 
 #custom-tomat.work {
-  color: #51cf66;
+  color: @primary;
 }
 
 #custom-tomat.work-paused {
-  color: #ffa94d;
+  color: @primary;
 }
 
 #custom-tomat.break {
-  color: #4dabf7;
+  color: @primary;
 }
 
 #custom-tomat.break-paused {
-  color: #748ffc;
+  color: @primary;
 }
 
 #workspaces {
@@ -60,18 +65,26 @@
   margin-right: 5px;
 }
 
+#scratchpad {
+  padding: 0.3rem 0.6rem;
+  margin: 5px 5px 5px 0px;
+  color: @primary;
+}
+
 #custom-uptime {
   margin-right: 5px;
 }
 
 /* Hover effects for left modules */
 #custom-uptime:hover,
+#scratchpad:hover,
 #cpu:hover {
-  background-color: rgb(41, 42, 53);
+  background-color: @surface;
+  color: @text;
 }
 
 #workspaces button {
-  color: #babbf1;
+  color: @primary;
   border-radius: 5px;
   padding: 0.3rem 0.6rem;
   background: transparent;
@@ -81,35 +94,35 @@
 }
 
 #workspaces button.focused {
-  color: #99d1db;
-  background-color: rgba(153, 209, 219, 0.1);
-  box-shadow: inset 0 0 0 1px rgba(153, 209, 219, 0.2);
+  color: @secondary;
+  background-color: alpha(@secondary, 0.1);
+  box-shadow: inset 0 0 0 1px alpha(@secondary, 0.2);
 }
 
 #workspaces button.visible:not(.focused) {
-  color: #f2a7c3;
-  background-color: rgba(242, 167, 195, 0.08);
-  box-shadow: inset 0 0 0 1px rgba(242, 167, 195, 0.15);
+  color: @primary;
+  background-color: alpha(@primary, 0.08);
+  box-shadow: inset 0 0 0 1px alpha(@primary, 0.15);
 }
 
 #workspaces button.urgent {
-  color: #e78284;
-  background-color: rgba(231, 130, 132, 0.1);
-  box-shadow: inset 0 0 0 1px rgba(231, 130, 132, 0.2);
+  color: @primary;
+  background-color: alpha(@text-primary, 0.1);
+  box-shadow: inset 0 0 0 1px alpha(@text-primary, 0.2);
 }
 
 #workspaces button:hover {
-  background: rgb(41, 42, 53);
-  color: #c6d0f5;
+  background: @surface;
+  color: @text;
 }
 
 /* --- Center Module --- */
 #clock {
-  background-color: #1a1b26;
+  background-color: @background;
   padding: 0.3rem 0.7rem;
   margin: 5px 0px;
   border-radius: 6px;
-  box-shadow: 0 1px 3px rgba(153, 209, 219, 0.2);
+  box-shadow: 0 1px 3px alpha(@secondary, 0.2);
   min-width: 0;
   border: none;
   transition:
@@ -118,12 +131,12 @@
 }
 
 #clock:hover {
-  background-color: rgba(153, 209, 219, 0.1);
+  background-color: alpha(@secondary, 0.1);
 }
 
 /* Pomodoro Module */
 #custom-pomodoro {
-  background-color: #1a1b26;
+  background-color: @background;
   padding: 0.3rem 0.7rem;
   margin: 5px 0px;
   border-radius: 6px;
@@ -136,7 +149,7 @@
     color 0.2s ease-in-out,
     outline 0.2s ease-in-out,
     box-shadow 0.2s ease-in-out;
-  color: #babbf1;
+  color: @primary;
   font-weight: 600;
   margin-left: 5px;
   margin-right: 5px;
@@ -145,31 +158,31 @@
 #custom-pomatez {
   padding: 0 10px;
   min-width: 60px;
-  color: #ffffff;
+  color: @text;
   font-weight: bold;
 }
 
 #custom-pomatez.active {
-  background-color: #ff6b6b;
+  background-color: @text-primary;
 }
 
 #custom-pomatez.off {
   background-color: transparent;
-  color: #666666;
+  color: alpha(@text, 0.6);
 }
 
 #custom-pomodoro:hover {
-  background-color: rgb(41, 42, 53);
-  color: #c6d0f5;
+  background-color: @surface;
+  color: @text;
   outline: 1px solid rgba(255, 255, 255, 0.1);
   outline-offset: -1px;
 }
 
 #custom-pomodoro.work,
 #custom-pomodoro.break {
-  color: #99d1db;
-  background-color: rgba(153, 209, 219, 0.1);
-  box-shadow: inset 0 0 0 1px rgba(153, 209, 219, 0.2);
+  color: @secondary;
+  background-color: alpha(@secondary, 0.1);
+  box-shadow: inset 0 0 0 1px alpha(@secondary, 0.2);
   outline: none;
 }
 
@@ -180,7 +193,7 @@
 #network,
 #custom-lock,
 #battery {
-  background-color: #1a1b26;
+  background-color: @background;
   padding: 0.3rem 0.7rem;
   margin: 5px 0px;
   border-radius: 0;
@@ -198,7 +211,7 @@
 #network:hover,
 #custom-lock:hover,
 #battery:hover {
-  background-color: rgb(41, 42, 53);
+  background-color: @surface;
 }
 
 #bluetooth {
@@ -215,54 +228,54 @@
 
 /* --- Colors --- */
 #custom-uptime {
-  color: #babbf1;
+  color: @primary;
 }
 #cpu {
-  color: #c6d0f5;
+  color: @text;
 }
 #clock {
-  color: #99d1db;
+  color: @secondary;
   font-weight: 500;
 }
 #pulseaudio {
-  color: #c6d0f5;
+  color: @text;
 }
 #backlight {
-  color: #c6d0f5;
+  color: @text;
 }
 #network {
-  color: #c6d0f5;
+  color: @text;
 }
 #network.disconnected {
-  color: #e78284;
+  color: @primary;
 }
 #custom-lock {
-  color: #babbf1;
+  color: @primary;
 }
 #bluetooth {
-  color: #888888;
+  color: alpha(@text, 0.6);
   font-size: 16px;
 }
 #bluetooth.on {
-  color: #2196f3;
+  color: @primary;
 }
 #bluetooth.connected {
-  color: #99d1db;
+  color: @secondary;
 }
 #battery {
-  color: #99d1db;
+  color: @secondary;
 }
 #battery.charging {
-  color: #a6d189;
+  color: @primary;
 }
 #battery.warning:not(.charging) {
-  color: #e78284;
+  color: @primary;
 }
 
 /* --- Tooltip Styles --- */
 tooltip {
-  background-color: #1a1b26;
-  color: #dddddd;
+  background-color: @background;
+  color: @text;
   padding: 5px 12px;
   margin: 5px 0px;
   border-radius: 6px;

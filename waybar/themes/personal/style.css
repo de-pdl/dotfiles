@@ -58,11 +58,11 @@ window#waybar {
 
 /* Warnings and Alerts */
 #battery.warning {
-    color: #ff9e64; /* Warning Orange */
+    color: @primary;
 }
 
 #battery.critical {
-    color: #f7768e; /* Critical Red */
+    color: @text-primary;
     animation-name: blink;
     animation-duration: 0.5s;
     animation-timing-function: linear;
@@ -72,7 +72,7 @@ window#waybar {
 
 @keyframes blink {
     to {
-        background-color: #f7768e;
+        background-color: @text-primary;
         color: @surface;
     }
 }

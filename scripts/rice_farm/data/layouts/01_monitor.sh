@@ -22,7 +22,7 @@ LAYOUT_NAME="Monitor Dashboard"
 
 LAYOUT_APPS=(
     # type | command                                 | x1 y1 x2 y2  | extras
-    "term  | btop                                    |  80  0  40 60"
+    "term  | btop                                    |  0  0  40 60"
     "term  | fastfetch; exec sleep infinity          |  0 60  40 100"
     "term  | tty-clock -c -C 4                       | 80  0 100 18"
     "term  | fish                                    | 40 18 100 80 | cwd=$HOME/dotfiles"
