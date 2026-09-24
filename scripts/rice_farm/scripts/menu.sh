@@ -1,21 +1,14 @@
 #!/bin/bash
 # Menu display and choice handling
 
+# The rofi script-mode control center owns the whole interaction loop
+# (pages, actions, re-renders happen inside control_center.sh via
+# ROFI_RETV/ROFI_INFO). show_menu LAUNCHES rofi with the backend as a
+# script-mode modi; rofi then drives control_center.sh per interaction.
+# SCRIPTS_DIR is set by main_rice.sh before this file is sourced.
 show_menu() {
-    local gaming_status=""
-    [[ -f "${XDG_STATE_HOME:-$HOME/.local/state}/rice_farm_gaming" ]] && gaming_status=" [ON]"
-    local options="󰸉 Change Wallpaper\n󱁻 Change Waybar\n Random Wallpaper\n󰃢 Refresh Waybar\n󰖺 Gaming Mode${gaming_status}\n󰐥 Reload Sway"
-    echo -e "$options" | rofi -dmenu -i -p "󰄼 Rice Management:" -theme-str 'window {width: 30%;}'
+    exec rofi -show-icons -modi "rc:$SCRIPTS_DIR/control_center.sh" -show rc \
+        -theme "$SCRIPTS_DIR/cc_theme.rasi"
 }
 
-handle_choice() {
-    case "$1" in
-        "󰸉 Change Wallpaper") change_wallpaper ;;
-        "󱁻 Change Waybar") change_waybar ;;
-        " Random Wallpaper") random_wallpaper ;;
-        "󰃢 Refresh Waybar") refresh_waybar ;;
-        *"Gaming Mode"*) gaming_mode_toggle ;;
-        "󰐥 Reload Sway") reload_sway ;;
-        *) log "Unknown choice: $1" ;;
-    esac
-}
+handle_choice() { :; }
