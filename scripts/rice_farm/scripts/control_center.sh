@@ -16,7 +16,11 @@
 #   - rows carry "info\x1ftab=<PAGE>[;act=<id>]": tab is the page to
 #     (re)render, act is an action to run before re-rendering that page.
 #     Selecting a row therefore always ends in re-rendering a page, which is
-#     what makes toggles flip live.
+#     what makes toggles flip live. Every render also emits the "\0theme"
+#     mode option (see PAGE THEME below): the gallery page re-themes the
+#     running rofi into the cc_gallery.rasi icon grid, all other pages emit
+#     the list-layout revert — per-invocation theme switching without
+#     relaunching rofi.
 #
 # Pages: Menu (tabs: Display, Color, Wallpaper, Toggles) plus the sub pages
 # Resolution, Harmony, Preset, Wallgallery, Waybar. Status reads are cheap on
@@ -57,6 +61,44 @@ log() {
 row()       { printf '%s\n' "$1"; }                                   # plain row
 row_info()  { printf '%s\0info\x1f%s\n' "$1" "$2"; }                  # selectable, carries routing info
 row_fixed() { printf '%s\0nonselectable\x1ftrue\n' "$1"; }            # nonselectable (status header)
+
+# ============================================================================
+# PAGE THEME (gallery grid vs list, per-invocation rofi theme snippet)
+# ============================================================================
+# rofi loads its theme at launch, but rofi 2.0 script mode lets each
+# invocation carry a theme snippet via the "\0theme\x1f<snippet>" mode option
+# (rofi-script(5): "Small theme snippet to f.e. change the background color
+# of a widget"). The wallpaper gallery page uses that hook to turn the entry
+# list into the old gallery.rasi icon grid WITHOUT relaunching rofi; every
+# other page emits the list-layout revert so the rest of the CC keeps the
+# cc_theme.rasi look. Emission is unconditional and idempotent: the snippet
+# is sticky between invocations, so leaving the gallery must actively
+# restore the list layout.
+CC_LIST_THEME='window { width: 640px; } listview { columns: 1; lines: 8; spacing: 4px; } element { orientation: horizontal; spacing: 10px; padding: 8px 10px; border-radius: 8px; } element selected.normal { background-color: @selected-bg; border: 0px; text-color: @selected-fg; } element-icon { size: 1.2em; } element-text { horizontal-align: 0.0; }'   # keep in sync with cc_theme.rasi
+
+# cc_gallery.rasi collapsed to a single protocol line: strip comment blocks
+# (multi-line range first, then any inline pair) and @import lines (palette
+# comes from the launch theme), join the rest to one line — a \0theme value
+# must be a single line. Empty output (missing/unreadable file) falls back
+# to the list theme in apply_page_theme.
+gallery_theme_snippet() {
+    local f="$SCRIPTS_DIR/cc_gallery.rasi"
+    local s=""
+    [[ -r "$f" ]] && s=$(sed -e '/\/\*/,/\*\//d' -e 's|/\*.*\*/||g' -e '/^[[:space:]]*@import/d' "$f" | tr '\n' ' ' | tr -s ' ')
+    [[ -n "${s// /}" ]] && printf '%s' "$s"
+}
+
+# One "\0theme" line per render: the grid snippet on the gallery page, the
+# list revert everywhere else.
+apply_page_theme() {
+    local page="$1" snippet=""
+    if [[ "$page" == "Wallgallery" ]]; then
+        snippet=$(gallery_theme_snippet)
+        [[ -z "$snippet" ]] && log "⚠️ control-center: cc_gallery.rasi unreadable, gallery falls back to list layout"
+    fi
+    [[ -z "$snippet" ]] && snippet="$CC_LIST_THEME"
+    printf '\0theme\x1f%s\n' "$snippet"
+}
 
 # ============================================================================
 # CHEAP STATE READS (never block, never run matugen)
@@ -383,8 +425,10 @@ apply_wallpaper_choice() {
 }
 
 # Apply a waybar theme choice (act=wb:<name>): mirrors waybar_picker.sh's
-# body exactly (symlink config + style.css, pkill -15 -f "waybar$", sleep 1,
-# PATH-prefixed relaunch) minus its rofi. Replaces change_waybar.
+# body (symlink config + style.css, stop waybar, sleep, PATH-prefixed
+# relaunch) minus its rofi. Replaces change_waybar. Unlike the picker, the
+# relaunch is detached — swaymsg exec (child of the sway session) with a
+# setsid fallback — so the bar survives rofi's exit teardown.
 apply_waybar_choice() {
     local name="$1"
     case "$name" in
@@ -400,11 +444,17 @@ apply_waybar_choice() {
     ln -sf "$themes_dir/$name/config" "$waybar_dir/config"
     ln -sf "$themes_dir/$name/style.css" "$waybar_dir/style.css"
 
-    pkill -15 -f "waybar$"
+    pkill -15 -x waybar 2>/dev/null || true
     sleep 1
 
-    # Launch with explicit PATH in environment (as waybar_picker.sh does)
-    PATH="$HOME/.local/bin:$PATH" waybar &
+    # Launch with explicit PATH in the command (as waybar_picker.sh does),
+    # detached: as a child of the sway session via swaymsg exec, or under
+    # setsid when swaymsg is unavailable — either way it survives rofi exit.
+    if [[ -n "${SWAYSOCK:-}" ]] && command -v swaymsg >/dev/null; then
+        swaymsg exec -- "PATH=\"$HOME/.local/bin:$PATH\" setsid waybar >/dev/null 2>&1"
+    else
+        PATH="$HOME/.local/bin:$PATH" setsid --fork waybar >/dev/null 2>&1
+    fi
 
     log "✅ control-center: theme: $name"
     notify-send "Rice Farm" "Waybar theme: $name"
@@ -468,6 +518,8 @@ main() {
             *)          page="Menu" ;;
         esac
     fi
+
+    apply_page_theme "$page"
 
     case "$page" in
         Display)    page_display ;;

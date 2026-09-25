@@ -3,9 +3,15 @@
 
 restart_waybar() {
     log "Restarting Waybar..."
-    pkill -f waybar || true
-    sleep 0.3
-    PATH="$HOME/.local/bin:$PATH" waybar > /dev/null 2>&1 &
+    pkill -x waybar 2>/dev/null || true
+    sleep 0.4
+    # Launch as a child of the sway session (survives rofi exit), with
+    # setsid as fallback when swaymsg is unavailable (SSH/headless).
+    if [[ -n "${SWAYSOCK:-}" ]] && command -v swaymsg >/dev/null; then
+        swaymsg exec -- "PATH=\"$HOME/.local/bin:$PATH\" setsid waybar >/dev/null 2>&1"
+    else
+        PATH="$HOME/.local/bin:$PATH" setsid --fork waybar >/dev/null 2>&1
+    fi
 }
 
 change_waybar() {

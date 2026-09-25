@@ -75,6 +75,12 @@ printf '%s\n' "${1-}" >> "$CC_BGARGS"
 EOF
 chmod +x "$FIX/.config/scripts/rice_farm/scripts/bg_load.sh"
 
+# Gallery grid theme: control_center.sh emits cc_gallery.rasi as the gallery
+# page's per-invocation rofi theme snippet, resolved from $SCRIPTS_DIR — the
+# fixture gets a copy that must be byte-identical to the shipped file
+# (asserted in the gallery theme section below).
+cp "$RICE_DIR/scripts/cc_gallery.rasi" "$FIX/.config/scripts/rice_farm/scripts/cc_gallery.rasi"
+
 # Stub reload_monitors.sh (the kanshi reassert script): the real one restarts
 # kanshi and refreshes the background; the stub only records that it ran, so
 # both the background spawn from set_resolution and the manual reload_mon
@@ -96,11 +102,19 @@ cat > "$FIX/bin/waybar" <<EOF
 #!/bin/bash
 printf 'waybar launched (PATH=%s)\n' "\$PATH" >> "$FIX/waybar.txt"
 EOF
+cat > "$FIX/bin/setsid" <<EOF
+#!/bin/bash
+# Fake setsid: record the call, then exec the payload synchronously so a
+# relaunch is observable without racing a real double-fork.
+printf 'setsid %s\n' "\$*" >> "$FIX/setsid.txt"
+[[ "\${1:-}" == "--fork" ]] && shift
+exec "\$@"
+EOF
 cat > "$FIX/bin/notify-send" <<EOF
 #!/bin/bash
 printf '%s\n' "\$*" >> "$FIX/notify.txt"
 EOF
-chmod +x "$FIX/bin/pkill" "$FIX/bin/waybar" "$FIX/bin/notify-send"
+chmod +x "$FIX/bin/pkill" "$FIX/bin/waybar" "$FIX/bin/setsid" "$FIX/bin/notify-send"
 
 # Wallpaper gallery fixture: two images (b created first so sorting is
 # actually exercised), one .txt that must never be listed. ../evil sits
@@ -121,9 +135,18 @@ mkdir -p "$FIX/.config/waybar/themes/alpha" "$FIX/.config/waybar/themes/beta"
 ln -sfn "$FIX/.config/waybar/themes/alpha/config" "$FIX/.config/waybar/config"
 ln -sfn "$FIX/.config/waybar/themes/alpha/style.css" "$FIX/.config/waybar/style.css"
 
-# Fake swaymsg: one active output DP-1, current mode 1920x1080@60.
-cat > "$FIX/bin/swaymsg" <<'EOF'
+# Fake swaymsg: `exec -- <cmd>` is relayed (recorded, then actually run so
+# the downstream setsid/waybar stubs fire); every other invocation returns
+# fixture JSON (get_outputs: one active output DP-1, 1920x1080@60).
+cat > "$FIX/bin/swaymsg" <<EOF
 #!/bin/bash
+if [[ "\${1:-}" == "exec" ]]; then
+    shift
+    [[ "\${1:-}" == "--" ]] && shift
+    printf 'swaymsg exec %s\n' "\$*" >> "$FIX/swaymsg.txt"
+    bash -c "\$*"
+    exit 0
+fi
 cat <<'JSON'
 [{"name":"DP-1","active":true,
   "current_mode":{"width":1920,"height":1080,"refresh":60000},
@@ -153,8 +176,12 @@ fi
 
 # run_cc <args...>: run the control center under the fixture, capture raw
 # stdout to a file (bash command substitution would strip \0 bytes).
+# SWAYSOCK is pinned from CC_TEST_SWAYSOCK (default: empty) so the daemon
+# relaunch branch under test is deterministic in ANY invoking environment
+# (headless sandbox AND a live sway session both run the same branch).
 run_cc() {
     PATH="$FIX/bin:$PATH" ROFI_RETV="${ROFI_RETV-}" ROFI_INFO="${ROFI_INFO-}" \
+        SWAYSOCK="${CC_TEST_SWAYSOCK-}" \
         bash "$CC" "$@" > "$CC_TEST_OUT" 2>"$FIX/err.txt"
 }
 
@@ -178,10 +205,12 @@ if grep -aq "preset:vibrant" "$CC_TEST_OUT"; then ok "status shows preset from c
 if grep -aq "harmony:complementary" "$CC_TEST_OUT"; then ok "status shows harmony from log"; else bad "status shows harmony from log"; fi
 if grep -aq "mode:dark" "$CC_TEST_OUT"; then ok "status shows mode from log"; else bad "status shows mode from log"; fi
 if grep -aq "gaming:ON" "$CC_TEST_OUT"; then ok "status shows gaming from state file"; else bad "status shows gaming from state file"; fi
-if [[ "$(wc -l < "$CC_TEST_OUT")" -eq 5 ]]; then
-    ok "top page is exactly status + 4 tab lines"
+# 6 lines, not 5: every render now also carries the "\0theme" mode-option
+# line (gallery grid vs list revert — see control_center.sh PAGE THEME).
+if [[ "$(wc -l < "$CC_TEST_OUT")" -eq 6 ]]; then
+    ok "top page is exactly theme-state + status + 4 tab lines"
 else
-    bad "top page is exactly status + 4 tab lines (got $(wc -l < "$CC_TEST_OUT") lines)"
+    bad "top page is exactly theme-state + status + 4 tab lines (got $(wc -l < "$CC_TEST_OUT") lines)"
 fi
 
 echo "== 3. navigation =="
@@ -472,7 +501,8 @@ echo "== 11. waybar theme action (wb:) =="
 # Re-point at alpha so the swap to beta is observable.
 ln -sfn "$FIX/.config/waybar/themes/alpha/config" "$FIX/.config/waybar/config"
 ln -sfn "$FIX/.config/waybar/themes/alpha/style.css" "$FIX/.config/waybar/style.css"
-rm -f "$FIX/pkill.txt" "$FIX/waybar.txt" "$FIX/notify.txt"
+rm -f "$FIX/pkill.txt" "$FIX/waybar.txt" "$FIX/notify.txt" \
+      "$FIX/setsid.txt" "$FIX/swaymsg.txt"
 ROFI_INFO="tab=Toggles;act=wb:beta" ROFI_RETV=1 run_cc
 if [[ "$(readlink "$FIX/.config/waybar/config")" == "$FIX/.config/waybar/themes/beta/config" ]]; then
     ok "wb: action re-pointed config symlink at themes/beta/config"
@@ -484,15 +514,26 @@ if [[ "$(readlink "$FIX/.config/waybar/style.css")" == "$FIX/.config/waybar/them
 else
     bad "wb: action re-pointed style.css symlink (got: $(readlink "$FIX/.config/waybar/style.css"))"
 fi
-if grep -qF 'pkill -15 -f waybar$' "$FIX/pkill.txt" 2>/dev/null; then
-    ok "wb: action stopped waybar with picker's pkill pattern"
+if grep -qF 'pkill -15 -x waybar' "$FIX/pkill.txt" 2>/dev/null; then
+    ok "wb: action stopped waybar with exact-name pkill (no -f substring kills)"
 else
-    bad "wb: action stopped waybar with picker's pkill pattern"
+    bad "wb: action stopped waybar with exact-name pkill (no -f substring kills)"
 fi
 if grep -qF "PATH=$FIX/.local/bin:" "$FIX/waybar.txt" 2>/dev/null; then
     ok "wb: action relaunched waybar with .local/bin PATH prefix"
 else
     bad "wb: action relaunched waybar with .local/bin PATH prefix"
+fi
+# No SWAYSOCK (run_cc pins it empty by default): setsid fallback branch.
+if grep -qx 'setsid --fork waybar' "$FIX/setsid.txt" 2>/dev/null; then
+    ok "wb: fallback relaunch detached via setsid --fork (survives rofi exit)"
+else
+    bad "wb: fallback relaunch detached via setsid --fork (survives rofi exit)"
+fi
+if grep -q '^swaymsg exec ' "$FIX/swaymsg.txt" 2>/dev/null; then
+    bad "wb: without SWAYSOCK must not route the relaunch through swaymsg"
+else
+    ok "wb: without SWAYSOCK the relaunch uses the setsid fallback"
 fi
 if grep -qF 'Waybar theme: beta' "$FIX/notify.txt" 2>/dev/null; then
     ok "wb: action notified 'Waybar theme: beta'"
@@ -517,6 +558,34 @@ if grep -aq 'rejected waybar theme' "$XDG_STATE_HOME/rice_farm.log"; then
     ok "wb: traversal attempt logged as rejected"
 else
     bad "wb: traversal attempt logged as rejected"
+fi
+
+# Sway-session path: with SWAYSOCK set the relaunch must go through
+# swaymsg exec, making waybar a child of the sway session (survives rofi).
+rm -f "$FIX/pkill.txt" "$FIX/setsid.txt" "$FIX/swaymsg.txt" "$FIX/waybar.txt"
+ln -sfn "$FIX/.config/waybar/themes/beta/config" "$FIX/.config/waybar/config"
+ln -sfn "$FIX/.config/waybar/themes/beta/style.css" "$FIX/.config/waybar/style.css"
+CC_TEST_SWAYSOCK="$FIX/sway.sock" ROFI_INFO="tab=Toggles;act=wb:alpha" ROFI_RETV=1 run_cc
+if grep -q '^swaymsg exec ' "$FIX/swaymsg.txt" 2>/dev/null; then
+    ok "wb: with SWAYSOCK the relaunch goes through swaymsg exec"
+else
+    bad "wb: with SWAYSOCK the relaunch goes through swaymsg exec"
+fi
+if grep -qF 'setsid waybar' "$FIX/swaymsg.txt" 2>/dev/null \
+   && grep -qF "PATH=\"$FIX/.local/bin:" "$FIX/swaymsg.txt" 2>/dev/null; then
+    ok "swaymsg exec command carries setsid + .local/bin PATH prefix"
+else
+    bad "swaymsg exec command carries setsid + .local/bin PATH prefix"
+fi
+if grep -qx 'setsid waybar' "$FIX/setsid.txt" 2>/dev/null; then
+    ok "swaymsg-exec branch still wraps waybar in setsid (double guard)"
+else
+    bad "swaymsg-exec branch still wraps waybar in setsid (double guard)"
+fi
+if grep -qF "PATH=$FIX/.local/bin:" "$FIX/waybar.txt" 2>/dev/null; then
+    ok "swaymsg-exec relaunch ran waybar with .local/bin PATH prefix"
+else
+    bad "swaymsg-exec relaunch ran waybar with .local/bin PATH prefix"
 fi
 
 echo "== 12. monitor position reload (kanshi reassert after mode change) =="
@@ -568,6 +637,127 @@ if grep -aq "Reload monitor positions" "$CC_TEST_OUT"; then
 else
     bad "Display page re-emitted after reload_mon action"
 fi
+
+echo "== 13. restart_waybar spawn hygiene (survives rofi exit) =="
+WAYBAR_FN="$RICE_DIR/functions/waybar.sh"
+if grep -qF 'setsid' "$WAYBAR_FN"; then
+    ok "restart_waybar detaches the relaunch via setsid"
+else
+    bad "restart_waybar detaches the relaunch via setsid"
+fi
+if grep -qF 'swaymsg exec' "$WAYBAR_FN"; then
+    ok "restart_waybar prefers swaymsg exec (child of the sway session)"
+else
+    bad "restart_waybar prefers swaymsg exec (child of the sway session)"
+fi
+if grep -q 'pkill -f waybar' "$WAYBAR_FN"; then
+    bad "no 'pkill -f waybar' remains in functions/waybar.sh"
+else
+    ok "no 'pkill -f waybar' remains in functions/waybar.sh"
+fi
+if grep -q 'pkill -f waybar' "$CC"; then
+    bad "no 'pkill -f waybar' remains in control_center.sh"
+else
+    ok "no 'pkill -f waybar' remains in control_center.sh"
+fi
+
+echo "== 14. gallery grid theme (per-invocation rofi theme snippet) =="
+GALLERY_THEME_SRC="$RICE_DIR/scripts/cc_gallery.rasi"
+
+# 14a. The shipped file parses as a standalone rasi theme (rofi -dump-theme),
+# skipped exactly like the cc_theme.rasi parse in block 5 when rofi is absent.
+if command -v rofi >/dev/null 2>&1; then
+    if rofi -no-config -theme "$GALLERY_THEME_SRC" -dump-theme > "$FIX/gallery_theme.txt" 2>&1; then
+        ok "rofi -no-config -theme cc_gallery.rasi -dump-theme exits 0"
+    else
+        bad "rofi -no-config -theme cc_gallery.rasi -dump-theme exits 0"
+        sed 's/^/        /' "$FIX/gallery_theme.txt"
+    fi
+    if grep -q "160px" "$FIX/gallery_theme.txt"; then
+        ok "dumped gallery theme has 160px icon tiles"
+    else
+        bad "dumped gallery theme has 160px icon tiles"
+    fi
+else
+    skip "rofi is not installed in this environment — gallery theme parse could NOT be verified"
+fi
+
+# 14b. Runtime resolution: the backend must reference cc_gallery.rasi
+# conditionally (only the Wallgallery page gets the grid snippet).
+if grep -q 'cc_gallery.rasi' "$CC" && grep -qF '"$page" == "Wallgallery"' "$CC"; then
+    ok "control_center.sh applies cc_gallery.rasi only on the Wallgallery page"
+else
+    bad "control_center.sh applies cc_gallery.rasi only on the Wallgallery page"
+fi
+if cmp -s "$GALLERY_THEME_SRC" "$FIX/.config/scripts/rice_farm/scripts/cc_gallery.rasi"; then
+    ok "fixture cc_gallery.rasi is byte-identical to the shipped file"
+else
+    bad "fixture cc_gallery.rasi is byte-identical to the shipped file"
+fi
+
+# 14c. Gallery render emits the grid snippet (multi-column listview + big
+# icon tiles); a non-gallery render emits the list revert instead.
+ROFI_INFO="tab=Wallgallery" ROFI_RETV=0 run_cc
+if grep -aq 'columns: 3' "$CC_TEST_OUT" && grep -aq 'element-icon { size: 160px' "$CC_TEST_OUT"; then
+    ok "gallery render emits the grid theme snippet (columns: 3, 160px tiles)"
+else
+    bad "gallery render emits the grid theme snippet (columns: 3, 160px tiles)"
+fi
+if grep -aq $'theme\x1f' "$CC_TEST_OUT"; then
+    ok "gallery render carries the \\0theme mode option"
+else
+    bad "gallery render carries the \\0theme mode option"
+fi
+
+ROFI_INFO="tab=Color" ROFI_RETV=0 run_cc
+if grep -aq 'columns: 1' "$CC_TEST_OUT" && ! grep -aq 'columns: 3' "$CC_TEST_OUT"; then
+    ok "non-gallery render emits the list-layout revert (columns: 1)"
+else
+    bad "non-gallery render emits the list-layout revert (columns: 1)"
+fi
+
+# Leaving the gallery must restore the list layout (theme is sticky between
+# invocations, so the revert has to be emitted on the way out too).
+ROFI_INFO="tab=Wallgallery" ROFI_RETV=0 run_cc
+ROFI_INFO="tab=Wallpaper" ROFI_RETV=0 run_cc
+if grep -aq 'columns: 1' "$CC_TEST_OUT" && ! grep -aq 'columns: 3' "$CC_TEST_OUT"; then
+    ok "render after leaving the gallery reverts to the list layout"
+else
+    bad "render after leaving the gallery reverts to the list layout"
+fi
+
+echo "== 15. keep-open: every settings action ends in a page re-render =="
+# rofi script mode closes the window when a render produces no entries, so
+# "stays open" = the post-action render is non-empty. Static half: the
+# action handler must contain no exit path and must route into the page
+# dispatch. Dynamic half: each settings act re-emits its own page's rows
+# (blocks 4/10/11/12 already pin gaming, harmony, mode, reload_mon, wp, wb;
+# these cover the remaining acts).
+if ! sed -n '/^run_action()/,/^}/p' "$CC" | grep -q 'exit'; then
+    ok "run_action case block has no exit paths (nothing closes rofi mid-flow)"
+else
+    bad "run_action case block has no exit paths (nothing closes rofi mid-flow)"
+fi
+if grep -A1 -F 'run_action "$act"' "$CC" | grep -qF 'page="$tab"'; then
+    ok "every act= routes straight into the page dispatch (action → re-render)"
+else
+    bad "every act= routes straight into the page dispatch (action → re-render)"
+fi
+
+keep_open() {  # <info> <needle expected in the re-rendered page>
+    ROFI_INFO="$1" ROFI_RETV=1 run_cc "x"
+    if [[ -s "$CC_TEST_OUT" ]] && grep -aq "$2" "$CC_TEST_OUT"; then
+        ok "keep-open after $1 (page re-emitted, rofi stays open)"
+    else
+        bad "keep-open after $1 (needle '$2' missing or empty output)"
+    fi
+}
+keep_open "tab=Preset;act=preset:vibrant"      "calm"
+keep_open "tab=Color;act=regen"               "Regenerate colors"
+keep_open "tab=Color;act=toggle_mode"         "Regenerate colors"
+keep_open "tab=Toggles;act=refresh_waybar"    "Gaming Mode"
+keep_open "tab=Display;act=random_wp"         "Pick wallpaper"
+keep_open "tab=Display;act=reload_sway"       "Reload monitor positions"
 
 echo
 echo "RESULT: $PASS passed, $FAIL failed, $SKIP skipped"

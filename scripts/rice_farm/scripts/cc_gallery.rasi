@@ -1,0 +1,61 @@
+/* cc_gallery.rasi — icon-grid theme for the Control Center's wallpaper
+   gallery page (page_wallgallery), ported from the old standalone
+   rofi/gallery.rasi picker.
+
+   MECHANISM (no rofi relaunch): rofi 2.0 script mode lets every invocation
+   carry a small theme snippet via the "\0theme\x1f<snippet>" mode option
+   (rofi-script(5)). control_center.sh reads THIS file when the current page
+   is Wallgallery, strips comments and @import lines, collapses it to a
+   single line and emits it as that snippet — the theme of the RUNNING
+   Control Center updates in place. Every other page emits CC_LIST_THEME
+   (defined in control_center.sh, mirrors cc_theme.rasi) so leaving the
+   gallery restores the list layout; keep the two in sync with cc_theme.rasi.
+
+   NOTE: rofi-script(5) warns the per-call snippet cannot restructure the
+   interface, only update existing widgets. These property updates degrade
+   acceptably if geometry does not re-layout live: 3 columns of 160px icon
+   tiles also fit inside the default 640px-wide window.
+
+   Old-grid values (rofi/gallery.rasi): 85% window, 4 columns x 3 lines,
+   220px icons, vertical elements, hidden text. Ported here as 3x4 with
+   160px icons and visible labels: the CC gallery shares its listview with
+   the "← Tabs" row and the filter inputbar, so labels stay readable and
+   tiles fit both the 85% and the 640px window. */
+
+@import "~/.config/rofi/colors.rasi"
+
+window {
+    width: 85%;
+}
+
+listview {
+    columns:          3;
+    lines:            4;
+    fixed-height:     true;
+    spacing:          8px;
+}
+
+element {
+    orientation:      vertical;
+    spacing:          6px;
+    padding:          4px;
+    border-radius:    10px;
+    background-color: transparent;
+}
+
+element selected.normal {
+    background-color: @accent-subtle;
+    border:           2px solid;
+    border-color:     @accent;
+    text-color:       @accent-subtle-fg;
+}
+
+element-icon {
+    size:             160px;
+    cursor:           pointer;
+}
+
+element-text {
+    horizontal-align: 0.5;
+    cursor:           pointer;
+}
