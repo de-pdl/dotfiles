@@ -7,6 +7,8 @@
 # It also works standalone for testing:
 #   ROFI_RETV=0 bash control_center.sh                    # top page
 #   ROFI_INFO=tab=Color ROFI_RETV=0 bash control_center.sh
+#   ROFI_INFO=tab=Wallgallery bash control_center.sh      # exits 7, no output
+#   RICE_CC_GALLERY=1 bash control_center.sh              # gallery list rows
 #
 # Protocol (rofi 2.0.0, doc/rofi-script.5.markdown):
 #   - each output line: "<text>\0key\x1fvalue[\x1fkey\x1fvalue...]"
@@ -16,11 +18,19 @@
 #   - rows carry "info\x1ftab=<PAGE>[;act=<id>]": tab is the page to
 #     (re)render, act is an action to run before re-rendering that page.
 #     Selecting a row therefore always ends in re-rendering a page, which is
-#     what makes toggles flip live. Every render also emits the "\0theme"
-#     mode option (see PAGE THEME below): the gallery page re-themes the
-#     running rofi into the cc_gallery.rasi icon grid, all other pages emit
-#     the list-layout revert — per-invocation theme switching without
-#     relaunching rofi.
+#     what makes toggles flip live.
+#
+# Gallery handoff (exit-status-7 convention, port of the old gallery.rasi
+# picker): a script-mode "\0theme" snippet cannot re-layout window geometry
+# (rofi 2.0, verified live 2026-09-26: the gallery stayed a single column),
+# so the Wallgallery page is NEVER rendered inside this rofi. Requesting it
+# makes page_wallgallery print nothing and exit 7; menu.sh sees the status
+# after its CC rofi has fully exited and launches a SECOND rofi process
+# (dmenu mode, cc_gallery.rasi at window creation) fed by this script in
+# GALLERY_LIST mode (RICE_CC_GALLERY=1: emit only wp: rows, same
+# "name\0icon\x1f<path>\x1finfo\x1fwp:<name>" protocol). One rofi window at
+# a time; a pick is applied via the existing act=wp: action, Escape loops
+# back to the CC menu (see menu.sh show_menu).
 #
 # Pages: Menu (tabs: Display, Color, Wallpaper, Toggles) plus the sub pages
 # Resolution, Harmony, Preset, Wallgallery, Waybar. Status reads are cheap on
@@ -61,44 +71,6 @@ log() {
 row()       { printf '%s\n' "$1"; }                                   # plain row
 row_info()  { printf '%s\0info\x1f%s\n' "$1" "$2"; }                  # selectable, carries routing info
 row_fixed() { printf '%s\0nonselectable\x1ftrue\n' "$1"; }            # nonselectable (status header)
-
-# ============================================================================
-# PAGE THEME (gallery grid vs list, per-invocation rofi theme snippet)
-# ============================================================================
-# rofi loads its theme at launch, but rofi 2.0 script mode lets each
-# invocation carry a theme snippet via the "\0theme\x1f<snippet>" mode option
-# (rofi-script(5): "Small theme snippet to f.e. change the background color
-# of a widget"). The wallpaper gallery page uses that hook to turn the entry
-# list into the old gallery.rasi icon grid WITHOUT relaunching rofi; every
-# other page emits the list-layout revert so the rest of the CC keeps the
-# cc_theme.rasi look. Emission is unconditional and idempotent: the snippet
-# is sticky between invocations, so leaving the gallery must actively
-# restore the list layout.
-CC_LIST_THEME='window { width: 640px; } listview { columns: 1; lines: 8; spacing: 4px; } element { orientation: horizontal; spacing: 10px; padding: 8px 10px; border-radius: 8px; } element selected.normal { background-color: @selected-bg; border: 0px; text-color: @selected-fg; } element-icon { size: 1.2em; } element-text { horizontal-align: 0.0; }'   # keep in sync with cc_theme.rasi
-
-# cc_gallery.rasi collapsed to a single protocol line: strip comment blocks
-# (multi-line range first, then any inline pair) and @import lines (palette
-# comes from the launch theme), join the rest to one line — a \0theme value
-# must be a single line. Empty output (missing/unreadable file) falls back
-# to the list theme in apply_page_theme.
-gallery_theme_snippet() {
-    local f="$SCRIPTS_DIR/cc_gallery.rasi"
-    local s=""
-    [[ -r "$f" ]] && s=$(sed -e '/\/\*/,/\*\//d' -e 's|/\*.*\*/||g' -e '/^[[:space:]]*@import/d' "$f" | tr '\n' ' ' | tr -s ' ')
-    [[ -n "${s// /}" ]] && printf '%s' "$s"
-}
-
-# One "\0theme" line per render: the grid snippet on the gallery page, the
-# list revert everywhere else.
-apply_page_theme() {
-    local page="$1" snippet=""
-    if [[ "$page" == "Wallgallery" ]]; then
-        snippet=$(gallery_theme_snippet)
-        [[ -z "$snippet" ]] && log "⚠️ control-center: cc_gallery.rasi unreadable, gallery falls back to list layout"
-    fi
-    [[ -z "$snippet" ]] && snippet="$CC_LIST_THEME"
-    printf '\0theme\x1f%s\n' "$snippet"
-}
 
 # ============================================================================
 # CHEAP STATE READS (never block, never run matugen)
@@ -223,23 +195,32 @@ page_wallpaper() {
     row_info "Random wallpaper"  "tab=Wallpaper;act=random_wp"
 }
 
-# Native replacement for the old nested-rofi wallpaper picker: one row per
-# image in $WALLPAPER_DIR, the rofi icon trick from functions/wallpaper.sh
-# carrying the full path (\x1ficon\x1f<file>) so each row shows a preview.
-# Regex must stay identical to wallpaper.sh's find so the gallery lists the
-# same files the old picker did.
+# The Wallgallery page is never rendered inside the CC rofi (see header):
+# print nothing and exit 7 so menu.sh relaunches the gallery as its own rofi
+# process. Regex lives in emit_gallery_list below and must stay identical to
+# wallpaper.sh's find so the gallery lists the same files the old picker did.
 page_wallgallery() {
-    row_info "←  Tabs" "tab=Wallpaper"
+    exit 7
+}
+
+# GALLERY_LIST mode (RICE_CC_GALLERY=1): the whole invocation is a list
+# generator that menu.sh pipes into the gallery rofi (dmenu mode). Emits ONLY
+# wp: rows — one per image, dmenu meta carrying the icon preview (the rofi
+# icon trick from functions/wallpaper.sh, full path) and the same wp: action
+# protocol the CC rows used. The pick comes back as the display text and
+# menu.sh applies it via act=wp:<name>; an empty list logs and sends no rows
+# (Escape from the empty gallery still returns to the CC menu).
+emit_gallery_list() {
     local wp_dir="${WALLPAPER_DIR:-$HOME/Pictures/wallpaper}"
-    local sep=$'\x1f' f b listed=0
+    local f b listed=0
     while IFS= read -r f; do
         [[ -z "$f" ]] && continue
         b=$(basename "$f")
-        row_info "$b" "tab=Wallgallery;act=wp:${b}${sep}icon${sep}$f"
+        printf '%s\0icon\x1f%s\x1finfo\x1fwp:%s\n' "$b" "$f" "$b"
         listed=1
     done < <(find "$wp_dir" -maxdepth 1 -type f \
                  -iregex '.*\.\(jpg\|jpeg\|png\|avif\|webp\)$' 2>/dev/null | sort)
-    [[ "$listed" -eq 1 ]] || row_fixed "No wallpapers found in: $wp_dir"
+    [[ "$listed" -eq 1 ]] || log "control-center: gallery list empty in: $wp_dir"
 }
 
 page_toggles() {
@@ -407,7 +388,9 @@ set_resolution() {
 }
 
 # Apply a gallery choice (act=wp:<basename>): load it via bg_load.sh in the
-# caller's stdout-guarded subshell. Replaces change_wallpaper's nested rofi.
+# caller's stdout-guarded subshell. A pick arrives from menu.sh's gallery
+# rofi (this script's GALLERY_LIST output); replaces change_wallpaper's
+# nested rofi.
 apply_wallpaper_choice() {
     local base="$1"
     case "$base" in
@@ -485,6 +468,12 @@ run_action() {
 # ROUTER
 # ============================================================================
 main() {
+    # GALLERY_LIST mode: bypass the page router entirely, emit the gallery
+    # rows for the gallery rofi and exit (see header / menu.sh).
+    if [[ "${RICE_CC_GALLERY:-}" == "1" ]]; then
+        emit_gallery_list
+        exit 0
+    fi
     local sel="${1:-}" retv="${ROFI_RETV:-}" info="${ROFI_INFO:-}"
     local tab="" act="" page="" p
     local -a parts=()
@@ -518,8 +507,6 @@ main() {
             *)          page="Menu" ;;
         esac
     fi
-
-    apply_page_theme "$page"
 
     case "$page" in
         Display)    page_display ;;

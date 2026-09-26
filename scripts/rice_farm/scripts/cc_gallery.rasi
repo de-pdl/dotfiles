@@ -1,36 +1,41 @@
-/* cc_gallery.rasi — icon-grid theme for the Control Center's wallpaper
-   gallery page (page_wallgallery), ported from the old standalone
-   rofi/gallery.rasi picker.
+/* cc_gallery.rasi — theme for the Control Center's wallpaper gallery, a
+   standalone rofi process launched by menu.sh's relaunch loop (the CC
+   backend exits 7 on the gallery page — see control_center.sh header).
 
-   MECHANISM (no rofi relaunch): rofi 2.0 script mode lets every invocation
-   carry a small theme snippet via the "\0theme\x1f<snippet>" mode option
-   (rofi-script(5)). control_center.sh reads THIS file when the current page
-   is Wallgallery, strips comments and @import lines, collapses it to a
-   single line and emits it as that snippet — the theme of the RUNNING
-   Control Center updates in place. Every other page emits CC_LIST_THEME
-   (defined in control_center.sh, mirrors cc_theme.rasi) so leaving the
-   gallery restores the list layout; keep the two in sync with cc_theme.rasi.
+   WHY A RELAUNCH: rofi loads its theme at window creation and a script-mode
+   "\0theme" snippet cannot re-layout geometry (rofi 2.0, verified live
+   2026-09-26: the in-place variant stayed a single column). Running the
+   gallery as its own rofi process with THIS theme is the faithful port of
+   the old standalone rofi/gallery.rasi picker; menu.sh guarantees the CC
+   window has fully exited before the gallery starts, so two rofi windows
+   never stack.
 
-   NOTE: rofi-script(5) warns the per-call snippet cannot restructure the
-   interface, only update existing widgets. These property updates degrade
-   acceptably if geometry does not re-layout live: 3 columns of 160px icon
-   tiles also fit inside the default 640px-wide window.
-
-   Old-grid values (rofi/gallery.rasi): 85% window, 4 columns x 3 lines,
-   220px icons, vertical elements, hidden text. Ported here as 3x4 with
-   160px icons and visible labels: the CC gallery shares its listview with
-   the "← Tabs" row and the filter inputbar, so labels stay readable and
-   tiles fit both the 85% and the 640px window. */
+   Values ported from rofi/gallery.rasi (cronos): 85%x90% window, 4x3 grid,
+   220px icons, hidden element text (font "Monospace 0" + transparent
+   color), disabled inputbar, palette via the shared colors.rasi import. */
 
 @import "~/.config/rofi/colors.rasi"
 
 window {
-    width: 85%;
+    width:            85%;
+    height:           90%;
+}
+
+mainbox {
+    background-color: transparent;
+    children:         [ listview ];
+    spacing:          0px;
+    padding:          0px;
+}
+
+inputbar {
+    enabled:          false;
 }
 
 listview {
-    columns:          3;
-    lines:            4;
+    background-color: transparent;
+    columns:          4;
+    lines:            3;
     fixed-height:     true;
     spacing:          8px;
 }
@@ -51,11 +56,13 @@ element selected.normal {
 }
 
 element-icon {
-    size:             160px;
+    size:             220px;
     cursor:           pointer;
 }
 
 element-text {
+    font:             "Monospace 0";
+    text-color:       rgba(0, 0, 0, 0);
     horizontal-align: 0.5;
     cursor:           pointer;
 }

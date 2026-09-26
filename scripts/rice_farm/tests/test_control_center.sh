@@ -75,12 +75,6 @@ printf '%s\n' "${1-}" >> "$CC_BGARGS"
 EOF
 chmod +x "$FIX/.config/scripts/rice_farm/scripts/bg_load.sh"
 
-# Gallery grid theme: control_center.sh emits cc_gallery.rasi as the gallery
-# page's per-invocation rofi theme snippet, resolved from $SCRIPTS_DIR — the
-# fixture gets a copy that must be byte-identical to the shipped file
-# (asserted in the gallery theme section below).
-cp "$RICE_DIR/scripts/cc_gallery.rasi" "$FIX/.config/scripts/rice_farm/scripts/cc_gallery.rasi"
-
 # Stub reload_monitors.sh (the kanshi reassert script): the real one restarts
 # kanshi and refreshes the background; the stub only records that it ran, so
 # both the background spawn from set_resolution and the manual reload_mon
@@ -175,14 +169,18 @@ else
 fi
 
 # run_cc <args...>: run the control center under the fixture, capture raw
-# stdout to a file (bash command substitution would strip \0 bytes).
+# stdout to a file (bash command substitution would strip \0 bytes) and the
+# exit status in CC_TEST_STATUS (the exit-7 gallery handoff is asserted).
 # SWAYSOCK is pinned from CC_TEST_SWAYSOCK (default: empty) so the daemon
 # relaunch branch under test is deterministic in ANY invoking environment
 # (headless sandbox AND a live sway session both run the same branch).
+# RICE_CC_GALLERY passes the GALLERY_LIST mode through like menu.sh sets it.
 run_cc() {
     PATH="$FIX/bin:$PATH" ROFI_RETV="${ROFI_RETV-}" ROFI_INFO="${ROFI_INFO-}" \
+        RICE_CC_GALLERY="${RICE_CC_GALLERY-}" \
         SWAYSOCK="${CC_TEST_SWAYSOCK-}" \
         bash "$CC" "$@" > "$CC_TEST_OUT" 2>"$FIX/err.txt"
+    CC_TEST_STATUS=$?
 }
 
 echo "== 1. syntax =="
@@ -205,12 +203,13 @@ if grep -aq "preset:vibrant" "$CC_TEST_OUT"; then ok "status shows preset from c
 if grep -aq "harmony:complementary" "$CC_TEST_OUT"; then ok "status shows harmony from log"; else bad "status shows harmony from log"; fi
 if grep -aq "mode:dark" "$CC_TEST_OUT"; then ok "status shows mode from log"; else bad "status shows mode from log"; fi
 if grep -aq "gaming:ON" "$CC_TEST_OUT"; then ok "status shows gaming from state file"; else bad "status shows gaming from state file"; fi
-# 6 lines, not 5: every render now also carries the "\0theme" mode-option
-# line (gallery grid vs list revert — see control_center.sh PAGE THEME).
-if [[ "$(wc -l < "$CC_TEST_OUT")" -eq 6 ]]; then
-    ok "top page is exactly theme-state + status + 4 tab lines"
+# 5 lines, not more: the "\0theme" per-page emission is gone (the gallery
+# grid now lives in menu.sh's relaunch + cc_gallery.rasi) — every render is
+# exactly status + 4 tab lines.
+if [[ "$(wc -l < "$CC_TEST_OUT")" -eq 5 ]]; then
+    ok "top page is exactly status + 4 tab lines (no theme line)"
 else
-    bad "top page is exactly theme-state + status + 4 tab lines (got $(wc -l < "$CC_TEST_OUT") lines)"
+    bad "top page is exactly status + 4 tab lines (got $(wc -l < "$CC_TEST_OUT") lines)"
 fi
 
 echo "== 3. navigation =="
@@ -297,11 +296,27 @@ else
     skip "rofi is not installed in this environment — theme parse could NOT be verified"
 fi
 
-echo "== 6. menu.sh wiring =="
-if grep -qF 'exec rofi -show-icons -modi "rc:$SCRIPTS_DIR/control_center.sh"' "$MENU"; then
-    ok "show_menu launches rofi in script mode with control_center backend"
+echo "== 6. menu.sh wiring (CC launch + gallery relaunch loop) =="
+if grep -qF 'rofi -show-icons -modi "rc:$SCRIPTS_DIR/control_center.sh"' "$MENU" \
+   && ! grep -qF 'exec rofi' "$MENU"; then
+    ok "show_menu launches the CC rofi in script mode (no exec: the loop needs the exit status)"
 else
-    bad "show_menu launches rofi in script mode with control_center backend"
+    bad "show_menu launches the CC rofi in script mode (no exec: the loop needs the exit status)"
+fi
+if grep -qF 'CC_LOOP_MAX=10' "$MENU"; then
+    ok "relaunch loop guard present (CC_LOOP_MAX=10)"
+else
+    bad "relaunch loop guard present (CC_LOOP_MAX=10)"
+fi
+if grep -qF 'cc_gallery.rasi' "$MENU" && grep -qF 'RICE_CC_GALLERY=1' "$MENU"; then
+    ok "gallery relaunch block: rofi -dmenu with cc_gallery.rasi, fed by RICE_CC_GALLERY=1 backend"
+else
+    bad "gallery relaunch block: rofi -dmenu with cc_gallery.rasi, fed by RICE_CC_GALLERY=1 backend"
+fi
+if grep -qF 'act=wp:$picked' "$MENU"; then
+    ok "gallery pick applied through the existing backend wp: action (no new action type)"
+else
+    bad "gallery pick applied through the existing backend wp: action (no new action type)"
 fi
 if grep -qF 'handle_choice() { :; }' "$MENU"; then
     ok "handle_choice is a no-op"
@@ -375,34 +390,74 @@ else
     bad "RICE_HARMONY=auto: header falls back to log grep"
 fi
 
-echo "== 8. wallgallery page (native sub-page, no nested rofi) =="
-ROFI_INFO="tab=Wallgallery" ROFI_RETV=0 run_cc
-if grep -aq "act=wp:a.jpg" "$CC_TEST_OUT" && grep -aq $'icon\x1f'"$WALLPAPER_DIR/a.jpg" "$CC_TEST_OUT"; then
-    ok "gallery lists a.jpg with act + full-path icon info"
+echo "== 8. wallgallery: exit-7 handoff + GALLERY_LIST mode =="
+# Static half of the convention: the backend documents "open the gallery" as
+# exit status 7 (menu.sh owns the relaunch; see control_center.sh header).
+if grep -q 'exit 7' "$CC"; then
+    ok "exit-status-7 convention present in the backend"
 else
-    bad "gallery lists a.jpg with act + full-path icon info"
+    bad "exit-status-7 convention present in the backend"
 fi
-if grep -aq "act=wp:b.jpg" "$CC_TEST_OUT" && grep -aq $'icon\x1f'"$WALLPAPER_DIR/b.jpg" "$CC_TEST_OUT"; then
-    ok "gallery lists b.jpg with act + full-path icon info"
+
+# CC-mode probe: asking for the gallery page prints NOTHING and exits 7 —
+# the CC rofi closes and menu.sh replaces it with the gallery rofi.
+ROFI_INFO="tab=Wallgallery" ROFI_RETV=0 run_cc
+if [[ "${CC_TEST_STATUS-}" == "7" ]]; then
+    ok "gallery page request exits with status 7 (menu.sh relaunch signal)"
 else
-    bad "gallery lists b.jpg with act + full-path icon info"
+    bad "gallery page request exits with status 7 (got: ${CC_TEST_STATUS-})"
+fi
+if [[ ! -s "$CC_TEST_OUT" ]]; then
+    ok "gallery handoff prints nothing (list comes from the relaunch)"
+else
+    bad "gallery handoff prints nothing (list comes from the relaunch)"
+fi
+
+# GALLERY_LIST probe (exactly what menu.sh pipes into the gallery rofi):
+# ONLY wp: rows, one per image, dmenu meta with icon path + wp: info.
+RICE_CC_GALLERY=1 ROFI_RETV=0 run_cc
+if [[ "${CC_TEST_STATUS-}" == "0" ]]; then
+    ok "GALLERY_LIST render exits 0"
+else
+    bad "GALLERY_LIST render exits 0 (got: ${CC_TEST_STATUS-})"
+fi
+# NOTE: a NUL cannot appear in a grep pattern passed through argv (C-string
+# truncation), so the text\0meta boundary is asserted with grep -aP \x00 and
+# the rest (path + info) with a plain grep.
+if grep -aqP '^a\.jpg\x00icon\x1f' "$CC_TEST_OUT" \
+   && grep -aq $'icon\x1f'"$WALLPAPER_DIR/a.jpg"$'\x1finfo\x1fwp:a.jpg' "$CC_TEST_OUT" \
+   && grep -aqP '^b\.jpg\x00icon\x1f' "$CC_TEST_OUT" \
+   && grep -aq $'icon\x1f'"$WALLPAPER_DIR/b.jpg"$'\x1finfo\x1fwp:b.jpg' "$CC_TEST_OUT"; then
+    ok "gallery rows carry name + full-path icon + wp: info"
+else
+    bad "gallery rows carry name + full-path icon + wp: info"
 fi
 if grep -aq "note.txt" "$CC_TEST_OUT"; then
-    bad "gallery excludes non-image files (note.txt leaked in)"
+    bad "gallery list excludes non-image files (note.txt leaked in)"
 else
-    ok "gallery excludes non-image files (note.txt absent)"
+    ok "gallery list excludes non-image files (note.txt absent)"
 fi
-la=$(grep -anm1 'act=wp:a.jpg' "$CC_TEST_OUT" | cut -d: -f1)
-lb=$(grep -anm1 'act=wp:b.jpg' "$CC_TEST_OUT" | cut -d: -f1)
+if [[ "$(grep -ac . "$CC_TEST_OUT")" -eq 2 ]]; then
+    ok "gallery list is ONLY wp: rows (exactly 2, no tabs/back-row/notice/theme lines)"
+else
+    bad "gallery list is ONLY wp: rows (got $(grep -ac . "$CC_TEST_OUT") rows)"
+fi
+# NOTE: grep -m1 is incompatible with -P on some GNU grep builds, hence
+# head -n1 for the first-match pick.
+la=$(grep -anP '^a\.jpg\x00' "$CC_TEST_OUT" | head -n1 | cut -d: -f1)
+lb=$(grep -anP '^b\.jpg\x00' "$CC_TEST_OUT" | head -n1 | cut -d: -f1)
 if [[ -n "$la" && -n "$lb" && "$la" -lt "$lb" ]]; then
     ok "gallery rows sorted (a.jpg before b.jpg)"
 else
     bad "gallery rows sorted (a.jpg before b.jpg; got a=$la b=$lb)"
 fi
-if grep -aq "tab=Wallpaper" "$CC_TEST_OUT"; then
-    ok "gallery back-row returns to Wallpaper tab"
+
+mkdir -p "$FIX/empty_wp"
+RICE_CC_GALLERY=1 WALLPAPER_DIR="$FIX/empty_wp" ROFI_RETV=0 run_cc
+if [[ ! -s "$CC_TEST_OUT" ]]; then
+    ok "empty gallery list emits no rows at all (Escape still returns to the CC)"
 else
-    bad "gallery back-row returns to Wallpaper tab"
+    bad "empty gallery list emits no rows at all (Escape still returns to the CC)"
 fi
 
 ROFI_INFO="tab=Wallpaper" ROFI_RETV=0 run_cc
@@ -410,14 +465,6 @@ if grep -aq "tab=Wallgallery" "$CC_TEST_OUT"; then
     ok "Wallpaper page 'Browse gallery' targets tab=Wallgallery"
 else
     bad "Wallpaper page 'Browse gallery' targets tab=Wallgallery"
-fi
-
-mkdir -p "$FIX/empty_wp"
-WALLPAPER_DIR="$FIX/empty_wp" ROFI_INFO="tab=Wallgallery" ROFI_RETV=0 run_cc
-if grep -aq $'nonselectable\x1ftrue' "$CC_TEST_OUT" && ! grep -aq 'act=wp:' "$CC_TEST_OUT"; then
-    ok "empty gallery emits a nonselectable notice and no wp: rows"
-else
-    bad "empty gallery emits a nonselectable notice and no wp: rows"
 fi
 
 echo "== 9. waybar page (native sub-page, no nested rofi) =="
@@ -454,8 +501,9 @@ else
 fi
 
 echo "== 10. wallpaper action (wp:) =="
+# The info string below is EXACTLY what menu.sh sends after a gallery pick.
 : > "$CC_BGARGS"; rm -f "$FIX/notify.txt"
-ROFI_INFO="tab=Wallgallery;act=wp:a.jpg" ROFI_RETV=1 run_cc
+ROFI_INFO="tab=Wallpaper;act=wp:a.jpg" ROFI_RETV=1 run_cc
 if grep -qx "$WALLPAPER_DIR/a.jpg" "$CC_BGARGS"; then
     ok "wp: action ran bg_load.sh with the full wallpaper path"
 else
@@ -466,14 +514,14 @@ if grep -qF 'Wallpaper changed: a.jpg' "$FIX/notify.txt" 2>/dev/null; then
 else
     bad "wp: action sent notify-send 'Wallpaper changed: a.jpg'"
 fi
-if grep -aq 'act=wp:a.jpg' "$CC_TEST_OUT"; then
-    ok "gallery page re-emitted after wp: action"
+if grep -aq 'Browse gallery' "$CC_TEST_OUT"; then
+    ok "Wallpaper page re-emitted after wp: action"
 else
-    bad "gallery page re-emitted after wp: action"
+    bad "Wallpaper page re-emitted after wp: action"
 fi
 
 : > "$CC_BGARGS"; rm -f "$FIX/notify.txt"
-ROFI_INFO="tab=Wallgallery;act=wp:../evil" ROFI_RETV=1 run_cc
+ROFI_INFO="tab=Wallpaper;act=wp:../evil" ROFI_RETV=1 run_cc
 if grep -q . "$CC_BGARGS"; then
     bad "wp: traversal payload rejected before bg_load (stub got: $(tr '\n' ' ' < "$CC_BGARGS"))"
 else
@@ -661,11 +709,13 @@ else
     ok "no 'pkill -f waybar' remains in control_center.sh"
 fi
 
-echo "== 14. gallery grid theme (per-invocation rofi theme snippet) =="
+echo "== 14. gallery theme (standalone cc_gallery.rasi + menu.sh relaunch, no \\0theme) =="
 GALLERY_THEME_SRC="$RICE_DIR/scripts/cc_gallery.rasi"
 
 # 14a. The shipped file parses as a standalone rasi theme (rofi -dump-theme),
 # skipped exactly like the cc_theme.rasi parse in block 5 when rofi is absent.
+# Values are the old rofi/gallery.rasi grid: 85%x90% window, 4x3 tiles,
+# 220px icons, hidden element text.
 if command -v rofi >/dev/null 2>&1; then
     if rofi -no-config -theme "$GALLERY_THEME_SRC" -dump-theme > "$FIX/gallery_theme.txt" 2>&1; then
         ok "rofi -no-config -theme cc_gallery.rasi -dump-theme exits 0"
@@ -673,57 +723,34 @@ if command -v rofi >/dev/null 2>&1; then
         bad "rofi -no-config -theme cc_gallery.rasi -dump-theme exits 0"
         sed 's/^/        /' "$FIX/gallery_theme.txt"
     fi
-    if grep -q "160px" "$FIX/gallery_theme.txt"; then
-        ok "dumped gallery theme has 160px icon tiles"
+    if grep -q "220px" "$FIX/gallery_theme.txt"; then
+        ok "dumped gallery theme has the 220px icon tiles from gallery.rasi"
     else
-        bad "dumped gallery theme has 160px icon tiles"
+        bad "dumped gallery theme has the 220px icon tiles from gallery.rasi"
+    fi
+    if grep -qE "width: *85(\\.0+)?%" "$FIX/gallery_theme.txt" && grep -q "columns: *4" "$FIX/gallery_theme.txt"; then
+        ok "dumped gallery theme has the 85% window + 4-column grid from gallery.rasi"
+    else
+        bad "dumped gallery theme has the 85% window + 4-column grid from gallery.rasi"
     fi
 else
     skip "rofi is not installed in this environment — gallery theme parse could NOT be verified"
 fi
 
-# 14b. Runtime resolution: the backend must reference cc_gallery.rasi
-# conditionally (only the Wallgallery page gets the grid snippet).
-if grep -q 'cc_gallery.rasi' "$CC" && grep -qF '"$page" == "Wallgallery"' "$CC"; then
-    ok "control_center.sh applies cc_gallery.rasi only on the Wallgallery page"
+# 14b. The per-page \0theme machinery is gone from the backend: gallery
+# theming lives in the standalone cc_gallery.rasi applied by menu.sh's
+# relaunch (see block 6), and every render is plain rows in the launch theme.
+if grep -q 'apply_page_theme' "$CC" || grep -q 'CC_LIST_THEME' "$CC" \
+   || grep -q 'gallery_theme_snippet' "$CC"; then
+    bad "no \\0theme machinery remains in control_center.sh"
 else
-    bad "control_center.sh applies cc_gallery.rasi only on the Wallgallery page"
+    ok "no \\0theme machinery remains in control_center.sh"
 fi
-if cmp -s "$GALLERY_THEME_SRC" "$FIX/.config/scripts/rice_farm/scripts/cc_gallery.rasi"; then
-    ok "fixture cc_gallery.rasi is byte-identical to the shipped file"
-else
-    bad "fixture cc_gallery.rasi is byte-identical to the shipped file"
-fi
-
-# 14c. Gallery render emits the grid snippet (multi-column listview + big
-# icon tiles); a non-gallery render emits the list revert instead.
-ROFI_INFO="tab=Wallgallery" ROFI_RETV=0 run_cc
-if grep -aq 'columns: 3' "$CC_TEST_OUT" && grep -aq 'element-icon { size: 160px' "$CC_TEST_OUT"; then
-    ok "gallery render emits the grid theme snippet (columns: 3, 160px tiles)"
-else
-    bad "gallery render emits the grid theme snippet (columns: 3, 160px tiles)"
-fi
-if grep -aq $'theme\x1f' "$CC_TEST_OUT"; then
-    ok "gallery render carries the \\0theme mode option"
-else
-    bad "gallery render carries the \\0theme mode option"
-fi
-
 ROFI_INFO="tab=Color" ROFI_RETV=0 run_cc
-if grep -aq 'columns: 1' "$CC_TEST_OUT" && ! grep -aq 'columns: 3' "$CC_TEST_OUT"; then
-    ok "non-gallery render emits the list-layout revert (columns: 1)"
+if grep -aq $'theme\x1f' "$CC_TEST_OUT"; then
+    bad "no render emits the \\0theme mode option anymore"
 else
-    bad "non-gallery render emits the list-layout revert (columns: 1)"
-fi
-
-# Leaving the gallery must restore the list layout (theme is sticky between
-# invocations, so the revert has to be emitted on the way out too).
-ROFI_INFO="tab=Wallgallery" ROFI_RETV=0 run_cc
-ROFI_INFO="tab=Wallpaper" ROFI_RETV=0 run_cc
-if grep -aq 'columns: 1' "$CC_TEST_OUT" && ! grep -aq 'columns: 3' "$CC_TEST_OUT"; then
-    ok "render after leaving the gallery reverts to the list layout"
-else
-    bad "render after leaving the gallery reverts to the list layout"
+    ok "no render emits the \\0theme mode option anymore"
 fi
 
 echo "== 15. keep-open: every settings action ends in a page re-render =="
@@ -758,6 +785,18 @@ keep_open "tab=Color;act=toggle_mode"         "Regenerate colors"
 keep_open "tab=Toggles;act=refresh_waybar"    "Gaming Mode"
 keep_open "tab=Display;act=random_wp"         "Pick wallpaper"
 keep_open "tab=Display;act=reload_sway"       "Reload monitor positions"
+
+echo "== 16. bg_load.sh must never kill rofi =="
+# bg_load.sh runs after every matugen regeneration (toggle_mode, preset,
+# harmony, wp:, random_wp). A `pkill rofi` there closed the control center
+# mid-interaction (2026-09-26 bug): the rofi script-mode backend re-renders
+# per interaction and rasi themes re-import colors.rasi at next launch, so
+# no kill-to-reload is needed.
+if grep -q "pkill rofi" "$RICE_DIR/scripts/bg_load.sh"; then
+    bad "no 'pkill rofi' remains in scripts/bg_load.sh (killed the control center on every regenerating action)"
+else
+    ok "no 'pkill rofi' remains in scripts/bg_load.sh"
+fi
 
 echo
 echo "RESULT: $PASS passed, $FAIL failed, $SKIP skipped"
