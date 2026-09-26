@@ -7,7 +7,8 @@
 # It also works standalone for testing:
 #   ROFI_RETV=0 bash control_center.sh                    # top page
 #   ROFI_INFO=tab=Color ROFI_RETV=0 bash control_center.sh
-#   ROFI_INFO=tab=Wallgallery bash control_center.sh      # exits 7, no output
+#   ROFI_INFO=tab=Wallgallery bash control_center.sh      # writes the gallery
+#                                                          # handshake file, no output
 #   RICE_CC_GALLERY=1 bash control_center.sh              # gallery list rows
 #
 # Protocol (rofi 2.0.0, doc/rofi-script.5.markdown):
@@ -20,17 +21,22 @@
 #     Selecting a row therefore always ends in re-rendering a page, which is
 #     what makes toggles flip live.
 #
-# Gallery handoff (exit-status-7 convention, port of the old gallery.rasi
+# Gallery handoff (state-file handshake, port of the old gallery.rasi
 # picker): a script-mode "\0theme" snippet cannot re-layout window geometry
 # (rofi 2.0, verified live 2026-09-26: the gallery stayed a single column),
 # so the Wallgallery page is NEVER rendered inside this rofi. Requesting it
-# makes page_wallgallery print nothing and exit 7; menu.sh sees the status
-# after its CC rofi has fully exited and launches a SECOND rofi process
-# (dmenu mode, cc_gallery.rasi at window creation) fed by this script in
-# GALLERY_LIST mode (RICE_CC_GALLERY=1: emit only wp: rows, same
-# "name\0icon\x1f<path>\x1finfo\x1fwp:<name>" protocol). One rofi window at
-# a time; a pick is applied via the existing act=wp: action, Escape loops
-# back to the CC menu (see menu.sh show_menu).
+# makes page_wallgallery write the handshake state file
+# ${XDG_CACHE_HOME:-$HOME/.cache}/rice_farm/open_gallery and exit 0; menu.sh
+# checks for that file after its CC rofi has fully exited and launches a
+# SECOND rofi process (dmenu mode, cc_gallery.rasi at window creation) fed
+# by this script in GALLERY_LIST mode (RICE_CC_GALLERY=1: emit only wp:
+# rows, same "name\0icon\x1f<path>\x1finfo\x1fwp:<name>" protocol). One rofi
+# window at a time; a pick is applied via the existing act=wp: action,
+# Escape loops back to the CC menu (see menu.sh show_menu).
+# (An earlier port used exit status 7 as the handoff signal: that never
+# fired on the live boxes — rofi exits 0 regardless of the backend's
+# status, so menu.sh never saw the 7 and the menu just closed. Verified
+# live 2026-09-26. The state file survives rofi's exit teardown.)
 #
 # Pages: Menu (tabs: Display, Color, Wallpaper, Toggles) plus the sub pages
 # Resolution, Harmony, Preset, Wallgallery, Waybar. Status reads are cheap on
@@ -51,6 +57,11 @@ FUNCTIONS_DIR="${FUNCTIONS_DIR:-$HOME/.config/scripts/rice_farm/functions}"
 LOG_FILE="${LOG_FILE:-${XDG_STATE_HOME:-$HOME/.local/state}/rice_farm.log}"
 GAMING_STATE_FILE="${GAMING_STATE_FILE:-${XDG_STATE_HOME:-$HOME/.local/state}/rice_farm_gaming}"
 RICE_CONF="${RICE_CONF:-$HOME/.config/rice_farm/rice.conf}"
+# Gallery handoff state file. menu.sh (show_menu) carries the SAME literal
+# path on purpose — one string, no shared config file. Written by
+# page_wallgallery, consumed (rm -f) by menu.sh before the gallery rofi
+# starts.
+GALLERY_HANDSHAKE="${XDG_CACHE_HOME:-$HOME/.cache}/rice_farm/open_gallery"
 
 mkdir -p "$(dirname "$LOG_FILE")"
 
@@ -196,11 +207,14 @@ page_wallpaper() {
 }
 
 # The Wallgallery page is never rendered inside the CC rofi (see header):
-# print nothing and exit 7 so menu.sh relaunches the gallery as its own rofi
-# process. Regex lives in emit_gallery_list below and must stay identical to
-# wallpaper.sh's find so the gallery lists the same files the old picker did.
+# write the handshake state file and exit 0 so menu.sh relaunches the
+# gallery as its own rofi process (the exit status is irrelevant to rofi's
+# own exit code and must not carry the signal). Regex lives in
+# emit_gallery_list below and must stay identical to wallpaper.sh's find so
+# the gallery lists the same files the old picker did.
 page_wallgallery() {
-    exit 7
+    mkdir -p "$(dirname "$GALLERY_HANDSHAKE")"
+    : > "$GALLERY_HANDSHAKE"
 }
 
 # GALLERY_LIST mode (RICE_CC_GALLERY=1): the whole invocation is a list

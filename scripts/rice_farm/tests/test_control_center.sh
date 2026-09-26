@@ -21,6 +21,7 @@ FIX="$(mktemp -d)"
 trap 'rm -rf "$FIX"' EXIT
 export HOME="$FIX"
 export XDG_STATE_HOME="$FIX/.local/state"
+export XDG_CACHE_HOME="$FIX/.cache"                # gallery handshake lands in the fixture
 export RICE_CONF="$FIX/.config/rice_farm/rice.conf"
 export CC_TEST_MARKER="$FIX/marker"
 export CC_BGENV="$FIX/bgenv.txt"                   # MATUGEN_HARMONY seen by bg_load stub
@@ -170,7 +171,7 @@ fi
 
 # run_cc <args...>: run the control center under the fixture, capture raw
 # stdout to a file (bash command substitution would strip \0 bytes) and the
-# exit status in CC_TEST_STATUS (the exit-7 gallery handoff is asserted).
+# exit status in CC_TEST_STATUS (the gallery state-file handoff is asserted).
 # SWAYSOCK is pinned from CC_TEST_SWAYSOCK (default: empty) so the daemon
 # relaunch branch under test is deterministic in ANY invoking environment
 # (headless sandbox AND a live sway session both run the same branch).
@@ -187,6 +188,11 @@ echo "== 1. syntax =="
 if bash -n "$CC"; then ok "bash -n control_center.sh"; else bad "bash -n control_center.sh"; fi
 if bash -n "$MENU"; then ok "bash -n menu.sh"; else bad "bash -n menu.sh"; fi
 if bash -n "$TESTS_DIR/test_control_center.sh"; then ok "bash -n test file"; else bad "bash -n test file"; fi
+if [[ -x "$CC" ]]; then
+    ok "control_center.sh is executable (menu.sh and rofi script mode exec it directly)"
+else
+    bad "control_center.sh is executable (menu.sh and rofi script mode exec it directly)"
+fi
 
 echo "== 2. top page render (ROFI_RETV=0, no args) =="
 run_cc
@@ -296,12 +302,12 @@ else
     skip "rofi is not installed in this environment — theme parse could NOT be verified"
 fi
 
-echo "== 6. menu.sh wiring (CC launch + gallery relaunch loop) =="
+echo "== 6. menu.sh wiring (CC launch + gallery state-file handoff loop) =="
 if grep -qF 'rofi -show-icons -modi "rc:$SCRIPTS_DIR/control_center.sh"' "$MENU" \
    && ! grep -qF 'exec rofi' "$MENU"; then
-    ok "show_menu launches the CC rofi in script mode (no exec: the loop needs the exit status)"
+    ok "show_menu launches the CC rofi in script mode (no exec: the loop checks the handshake file after rofi exits)"
 else
-    bad "show_menu launches the CC rofi in script mode (no exec: the loop needs the exit status)"
+    bad "show_menu launches the CC rofi in script mode (no exec: the loop checks the handshake file after rofi exits)"
 fi
 if grep -qF 'CC_LOOP_MAX=10' "$MENU"; then
     ok "relaunch loop guard present (CC_LOOP_MAX=10)"
@@ -312,6 +318,25 @@ if grep -qF 'cc_gallery.rasi' "$MENU" && grep -qF 'RICE_CC_GALLERY=1' "$MENU"; t
     ok "gallery relaunch block: rofi -dmenu with cc_gallery.rasi, fed by RICE_CC_GALLERY=1 backend"
 else
     bad "gallery relaunch block: rofi -dmenu with cc_gallery.rasi, fed by RICE_CC_GALLERY=1 backend"
+fi
+if grep -qF 'GALLERY_HANDSHAKE' "$MENU" && grep -qF 'rice_farm/open_gallery' "$MENU"; then
+    ok "menu.sh carries the gallery handshake literal (same path as the backend)"
+else
+    bad "menu.sh carries the gallery handshake literal (same path as the backend)"
+fi
+# Consumer hygiene: the file is rm -f'd BEFORE the gallery rofi starts, so a
+# stale handshake can never re-open the gallery on the next menu launch.
+hs_rm=$(grep -nF 'rm -f "$GALLERY_HANDSHAKE"' "$MENU" | head -n1 | cut -d: -f1)
+hs_gal=$(grep -nF 'rofi -show-icons -dmenu' "$MENU" | head -n1 | cut -d: -f1)
+if [[ -n "$hs_rm" && -n "$hs_gal" && "$hs_rm" -lt "$hs_gal" ]]; then
+    ok "handshake consumed (rm -f) before the gallery rofi launch"
+else
+    bad "handshake consumed (rm -f) before the gallery rofi launch (rm line: ${hs_rm:-none}, gallery line: ${hs_gal:-none})"
+fi
+if grep -q 'st != 7' "$MENU"; then
+    bad "no exit-status-7 check remains in menu.sh"
+else
+    ok "no exit-status-7 check remains in menu.sh"
 fi
 if grep -qF 'act=wp:$picked' "$MENU"; then
     ok "gallery pick applied through the existing backend wp: action (no new action type)"
@@ -390,27 +415,42 @@ else
     bad "RICE_HARMONY=auto: header falls back to log grep"
 fi
 
-echo "== 8. wallgallery: exit-7 handoff + GALLERY_LIST mode =="
+echo "== 8. wallgallery: state-file handshake + GALLERY_LIST mode =="
 # Static half of the convention: the backend documents "open the gallery" as
-# exit status 7 (menu.sh owns the relaunch; see control_center.sh header).
+# writing the handshake state file (menu.sh owns the relaunch; see
+# control_center.sh header). No exit status is involved: rofi's own exit
+# code never carried the backend's status (2026-09-26 live failure).
+GALLERY_HS="${XDG_CACHE_HOME:-$HOME/.cache}/rice_farm/open_gallery"
 if grep -q 'exit 7' "$CC"; then
-    ok "exit-status-7 convention present in the backend"
+    bad "no exit-7 convention remains in the backend"
 else
-    bad "exit-status-7 convention present in the backend"
+    ok "no exit-7 convention remains in the backend"
+fi
+if grep -qF 'rice_farm/open_gallery' "$CC"; then
+    ok "handshake literal present in the backend"
+else
+    bad "handshake literal present in the backend"
 fi
 
-# CC-mode probe: asking for the gallery page prints NOTHING and exits 7 —
-# the CC rofi closes and menu.sh replaces it with the gallery rofi.
+# CC-mode probe: asking for the gallery page prints NOTHING, exits 0 (the
+# CC rofi closes normally) and leaves the handshake file behind — menu.sh
+# sees the file and relaunches the gallery as its own rofi process.
+rm -f "$GALLERY_HS"
 ROFI_INFO="tab=Wallgallery" ROFI_RETV=0 run_cc
-if [[ "${CC_TEST_STATUS-}" == "7" ]]; then
-    ok "gallery page request exits with status 7 (menu.sh relaunch signal)"
+if [[ "${CC_TEST_STATUS-}" == "0" ]]; then
+    ok "gallery page request exits 0 (handoff is the state file, not a status)"
 else
-    bad "gallery page request exits with status 7 (got: ${CC_TEST_STATUS-})"
+    bad "gallery page request exits 0 (got: ${CC_TEST_STATUS-})"
 fi
 if [[ ! -s "$CC_TEST_OUT" ]]; then
     ok "gallery handoff prints nothing (list comes from the relaunch)"
 else
     bad "gallery handoff prints nothing (list comes from the relaunch)"
+fi
+if [[ -f "$GALLERY_HS" ]]; then
+    ok "gallery handoff created the handshake state file ($GALLERY_HS)"
+else
+    bad "gallery handoff created the handshake state file ($GALLERY_HS)"
 fi
 
 # GALLERY_LIST probe (exactly what menu.sh pipes into the gallery rofi):
