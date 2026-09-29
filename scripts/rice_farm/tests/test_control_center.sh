@@ -50,6 +50,8 @@ skip() { SKIP=$((SKIP + 1)); echo "  SKIP (not verified): $1"; }
 # rofi entry list.
 cat > "$FIX/.config/scripts/rice_farm/functions/00_stubs.sh" <<'EOF'
 gaming_mode_toggle()   { echo "POLLUTION-CHECK action stdout must not reach the list"; echo toggled >> "$CC_TEST_MARKER"; }
+sunshine_toggle()      { echo sunshine-toggled >> "$CC_TEST_MARKER"; }
+status_sunshine()      { printf 'OFF\n'; }
 change_wallpaper()     { :; }
 random_wallpaper()     { :; }
 refresh_waybar()       { :; }
@@ -231,6 +233,16 @@ if grep -aq "Gaming Mode \[ON\]" "$CC_TEST_OUT"; then
 else
     bad "Toggles page shows Gaming Mode [ON] from fixture state"
 fi
+if grep -aq "Sunshine \[OFF\]" "$CC_TEST_OUT"; then
+    ok "Toggles page shows Sunshine [OFF] from status stub"
+else
+    bad "Toggles page shows Sunshine [OFF] from status stub"
+fi
+if grep -aq "tab=Toggles;act=sunshine" "$CC_TEST_OUT"; then
+    ok "Toggles page Sunshine row routes act=sunshine"
+else
+    bad "Toggles page Sunshine row routes act=sunshine"
+fi
 for needle in "Refresh waybar" "Waybar theme"; do
     if grep -aq "$needle" "$CC_TEST_OUT"; then ok "Toggles page row: $needle"; else bad "Toggles page row: $needle"; fi
 done
@@ -272,6 +284,20 @@ if grep -aq "gaming mode toggle" "$XDG_STATE_HOME/rice_farm.log"; then
     ok "action logged via log() convention to rice_farm.log"
 else
     bad "action logged via log() convention to rice_farm.log"
+fi
+
+rm -f "$CC_TEST_MARKER"
+ROFI_INFO="tab=Toggles;act=sunshine" ROFI_RETV=1 run_cc "Sunshine [OFF]"
+if [[ -f "$CC_TEST_MARKER" ]] && grep -q "sunshine-toggled" "$CC_TEST_MARKER"; then
+    ok "selecting Sunshine ran sunshine_toggle (stub marker written)"
+else
+    bad "selecting Sunshine ran sunshine_toggle (stub marker written)"
+fi
+if grep -aq "Sunshine" "$CC_TEST_OUT"; then ok "page re-emitted after sunshine action"; else bad "page re-emitted after sunshine action"; fi
+if grep -aq "sunshine toggle" "$XDG_STATE_HOME/rice_farm.log"; then
+    ok "sunshine action logged via log() convention to rice_farm.log"
+else
+    bad "sunshine action logged via log() convention to rice_farm.log"
 fi
 
 ROFI_INFO="tab=Color;act=harmony:triadic" ROFI_RETV=1 run_cc

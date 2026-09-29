@@ -240,6 +240,7 @@ emit_gallery_list() {
 page_toggles() {
     row_info "←  Tabs"                          "tab=Menu"
     row_info "󰖺 Gaming Mode [$(status_gaming)]"  "tab=Toggles;act=gaming"
+    row_info "󰒋 Sunshine [$(status_sunshine)]"  "tab=Toggles;act=sunshine"
     row_info "Refresh waybar"                   "tab=Toggles;act=refresh_waybar"
     row_info "󱁻 Waybar theme"                    "tab=Waybar"
 }
@@ -462,6 +463,7 @@ run_action() {
     (
         case "$act" in
             gaming)         log "control-center: gaming mode toggle"; gaming_mode_toggle ;;
+            sunshine)       log "control-center: sunshine toggle"; sunshine_toggle ;;
             refresh_waybar) refresh_waybar ;;
             random_wp)      random_wallpaper ;;
             reload_sway)    reload_sway ;;
