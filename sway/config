@@ -13,7 +13,7 @@ exec_always dunst
 exec_always --no-startup-id sh -c "/home/$username/.config/scripts/rice_farm/scripts/startup.sh"
 
 # Clipboard history: cliphist watches wl-clipboard for text/image changes
-exec_always --no-startup-id sh -c 'pkill -f "wl-paste --watch cliphist store"; wl-paste --watch cliphist store'
+exec_always --no-startup-id sh -c 'pkill -x wl-paste 2>/dev/null; wl-paste --watch cliphist store'
 
 # --- 2. Clamshell Mode ---
 # When lid closes: disable internal screen. When opens: enable it.
@@ -38,7 +38,7 @@ bindsym $mod+q kill
 
 # start rofi (ensure you installed rofi-wayland)
 bindsym alt+space exec "rofi -show combi -modi window,drun,combi -combi-modi window,drun"
-exec_always pkill waybar; waybar -c ~/.dotfiles/waybar/config -s ~/.dotfiles/waybar/style.css
+exec_always --no-startup-id sh -c 'pkill -x waybar; waybar -c ~/.dotfiles/waybar/config -s ~/.dotfiles/waybar/style.css'
 
 
 bindsym $mod+Shift+Return exec ~/.config/scripts/rice_farm/main_rice.sh
@@ -178,12 +178,7 @@ input "type:touchpad" {
     drag_lock disabled
 }
 # The key here is the 'idlehint' and explicit 'lock' command
-exec swayidle -w \
-    timeout 300 'swaylock -f -c 000000' \
-    timeout 600 'swaymsg "output * dpms off"' resume 'swaymsg "output * dpms on"' \
-    before-sleep 'loginctl lock-session' \
-    lock 'swaylock -f -c 000000' \
-    unlock 'killall swaylock'
+exec_always --no-startup-id sh -c "/home/$username/.config/scripts/rice_farm/scripts/idle_start.sh"
 # Autostart
 exec --no-startup-id dex -a -s /etc/xdg/autostart/:~/.config/autostart/
 exec --no-startup-id /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
@@ -194,3 +189,6 @@ exec_always --no-startup-id mkfifo /tmp/xobpipe && tail -f /tmp/xobpipe | xob -t
 exec systemctl --user import-environment WAYLAND_DISPLAY XDG_SESSION_TYPE
 exec dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_SESSION_TYPE SWAYSOCK
 include ~/.config/sway/config.local
+
+# vesktop always on workspace 2 (added 2026-11-21)
+assign [class=vesktop] 2
